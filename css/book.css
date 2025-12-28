@@ -1,0 +1,126 @@
+/* Booking Modal Styles */
+
+/* Time Slots Grid */
+.time-slots-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.time-slot-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    min-width: 200px;
+    flex: 1 1 calc(50% - 6px);
+    max-width: calc(50% - 6px);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-slot-option:hover:not(.booked) {
+    border-color: #3b82f6;
+}
+
+.time-slot-option.selected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.time-slot-option.booked {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.time-slot-option .time-range {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.time-slot-option .status {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.time-slot-option .status.available {
+    color: #3b82f6;
+}
+
+.time-slot-option .status.booked {
+    color: #6b7280;
+}
+
+/* Reason Grid */
+.reason-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.reason-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reason-btn:hover {
+    border-color: #3b82f6;
+    background: #f8fafc;
+}
+
+.reason-btn.selected {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: white;
+}
+
+.reason-btn i {
+    font-size: 18px;
+}
+
+/* Modal Customization */
+#bookingModal .modal-content {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+#bookingModal .form-control {
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+
+#bookingModal .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+#bookingModal .dropdown-toggle {
+    border-radius: 20px;
+    padding: 8px 16px;
+}
+
+#bookingModal .dropdown-menu {
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+#bookingModal .dropdown-item {
+    padding: 8px 16px;
+}
+
+#bookingModal .dropdown-item:hover {
+    background: #f1f5f9;
+}

@@ -1,0 +1,165 @@
+.home {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Time Slot Buttons */
+.time-slot {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #1f2937;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    width: 140px;
+    text-align: center;
+}
+
+.time-slot:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.time-slot.closed {
+    background: #fecaca;
+    border-color: #fecaca;
+    color: #dc2626;
+    cursor: not-allowed;
+}
+
+.time-slot.closed:hover {
+    background: #fecaca;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+/* Teacher Info */
+.teacher-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.teacher-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.teacher-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    font-size: 14px;
+}
+
+.teacher-subject {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Slots container */
+.slots-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Table styling */
+.schedule-table {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-table .table {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.schedule-table thead th {
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 13px;
+    padding: 16px;
+    text-align: center;
+}
+
+.schedule-table thead th:first-child {
+    text-align: left;
+}
+
+.schedule-table tbody {
+    flex: 1;
+}
+
+.schedule-table tbody td {
+    padding: 24px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f8f9fa;
+    text-align: center;
+}
+
+.schedule-table tbody td:first-child {
+    text-align: left;
+}
+
+.schedule-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Date Navigation */
+.date-nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.date-nav-btn:hover {
+    background: #f8f9fa;
+    color: #1f2937;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+}
+
+.date-range i {
+    color: #64748b;
+}
+
+.date-range span {
+    font-weight: 500;
+    color: #1f2937;
+    font-size: 14px;
+}
