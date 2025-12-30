@@ -6,8 +6,8 @@
     <title>Dashboard</title>
 
     <!--CSS-->
-    <link rel="stylesheet" href="/shared/css/sidebar.css">
-    <link rel="stylesheet" href="/pages/dashboard/dashboard.css">
+    <link rel="stylesheet" href="../../shared/css/sidebar.css">
+    <link rel="stylesheet" href="./dashboard.css">
 
     <!--Bootstrap 5 CSS-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" 
@@ -37,7 +37,7 @@
             <!-- Profile Dropdown -->
             <div class="profile-dropdown">
                 <div class="profile-btn" onclick="toggleProfileMenu()">
-                    <img src="/assets/Malvar, Rhain B..jpg" alt="Profile">
+                    <img src="../../assets/Malvar, Rhain B..jpg" alt="Profile">
                     <div class="profile-info">
                         <p class="name">Malvar, Rhain B.</p>
                         <p class="student-id">02000 391123</p>
@@ -46,7 +46,7 @@
                 </div>
                 <div class="profile-menu" id="profileMenu">
                     <div class="profile-menu-header">
-                        <img src="/assets/Malvar, Rhain B..jpg" alt="Profile">
+                        <img src="../../assets/Malvar, Rhain B..jpg" alt="Profile">
                         <div>
                             <p class="name">Malvar, Rhain B.</p>
                             <p class="email">malvar.391122@santarosa.sti.edu.ph</p>
@@ -65,21 +65,21 @@
                 <div class="teacher-list">
                     <div class="teacher-item">
                         <div class="teacher-info">
-                            <img src="/assets/justin nabunturan.png" alt="Teacher">
+                            <img src="../../assets/justin nabunturan.png" alt="Teacher">
                             <span>Justin Nabunturan</span>
                         </div>
                         <button class="request-btn">Request</button>
                     </div>
                     <div class="teacher-item">
                         <div class="teacher-info">
-                            <img src="/assets/baek jiheon.png" alt="Teacher">
+                            <img src="../../assets/baek jiheon.png" alt="Teacher">
                             <span>Baek Jiheon</span>
                         </div>
                         <button class="request-btn">Request</button>
                     </div>
                     <div class="teacher-item">
                         <div class="teacher-info">
-                            <img src="/assets/professor urada.png" alt="Teacher">
+                            <img src="../../assets/professor urada.png" alt="Teacher">
                             <span>Professor Urada</span>
                         </div>
                         <button class="request-btn">Request</button>
@@ -102,7 +102,7 @@
                         <tr>
                             <td>
                                 <div class="history-item">
-                                    <img src="/assets/justin nabunturan.png" alt="">
+                                    <img src="../../assets/justin nabunturan.png" alt="">
                                     <span>Justin Nabunturan</span>
                                 </div>
                             </td>
@@ -112,7 +112,7 @@
                         <tr>
                             <td>
                                 <div class="history-item">
-                                    <img src="/assets/baek jiheon.png" alt="">
+                                    <img src="../../assets/baek jiheon.png" alt="">
                                     <span>Baek Jiheon</span>
                                 </div>
                             </td>
@@ -122,7 +122,7 @@
                         <tr>
                             <td>
                                 <div class="history-item">
-                                    <img src="/assets/professor urada.png" alt="">
+                                    <img src="../../assets/professor urada.png" alt="">
                                     <span>Professor Urada</span>
                                 </div>
                             </td>
@@ -201,7 +201,7 @@
     <!-- Profile Modal Container -->
     <div id="profile-modal-container"></div>
 
-    <script src="/shared/js/load-sidebar.js"></script>
+    <script src="../../shared/js/load-sidebar.js"></script>
 
     <!--Bootstrap 5 JS-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
@@ -211,17 +211,17 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
 
     <!--Calendar JS (centralized calendar data & initialization)-->
-    <script src="/shared/js/calendar.js"></script>
+    <script src="../../shared/js/calendar.js"></script>
 
     <!--Dashboard JS-->
-    <script src="/pages/dashboard/dashboard.js"></script>
+    <script src="./dashboard.js"></script>
 
     <!--Profile JS-->
-    <script src="/components/modals/profile.js"></script>
+    <script src="../../components/modals/profile.js"></script>
 
     <!-- Load Profile Modal -->
     <script>
-        fetch('/components/modals/profile.html')
+        fetch('../../components/modals/profile.html')
             .then(response => response.text())
             .then(html => {
                 document.getElementById('profile-modal-container').innerHTML = html;

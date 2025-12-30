@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load booking modal HTML
-    fetch('/components/modals/book.html')
+    fetch('../../components/modals/book.html')
         .then(response => response.text())
         .then(html => {
             document.getElementById('booking-modal-container').innerHTML = html;

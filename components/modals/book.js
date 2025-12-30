@@ -203,7 +203,7 @@ function confirmBooking() {
 document.addEventListener('DOMContentLoaded', function() {
     // Load the booking modal HTML if not already present
     if (!document.getElementById('bookingModal')) {
-        fetch('/html/book.html')
+        fetch('../../components/modals/book.html')
             .then(response => response.text())
             .then(html => {
                 const container = document.createElement('div');
