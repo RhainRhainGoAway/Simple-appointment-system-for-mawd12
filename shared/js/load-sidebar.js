@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarContainer = document.getElementById('sidebar-container');
     
     if (sidebarContainer) {
-        fetch('/html/sidebar-partial.html')
+        fetch('/components/sidebar/sidebar-partial.html')
             .then(response => response.text())
             .then(html => {
                 sidebarContainer.innerHTML = html;

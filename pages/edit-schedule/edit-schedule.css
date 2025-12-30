@@ -1,0 +1,404 @@
+/* ============================================
+   EDIT-SCHEDULE.CSS - Edit Schedule Page Styles
+   ============================================ */
+
+.home {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Schedule Card */
+.schedule-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Weekly Schedule */
+.weekly-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.day-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.day-row:last-child {
+    border-bottom: none;
+}
+
+.day-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 80px;
+}
+
+.day-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.day-checkbox:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.day-label {
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+    cursor: pointer;
+}
+
+.time-slots-container {
+    flex: 1;
+}
+
+.unavailable-text {
+    color: #9ca3af;
+    font-style: italic;
+    padding: 8px 0;
+}
+
+.day-row.active .unavailable-text {
+    display: none;
+}
+
+.time-slots {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.day-row.active .time-slots {
+    display: flex;
+}
+
+/* Time Slot Row */
+.time-slot-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-input {
+    width: 75px;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.period-select {
+    width: 65px;
+    padding: 8px 6px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.period-select:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.time-separator {
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    background: #f3f4f6;
+}
+
+.btn-icon.btn-delete:hover {
+    color: #ef4444;
+    background: #fef2f2;
+}
+
+.btn-icon.btn-add:hover {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.btn-icon.btn-star {
+    color: #d1d5db;
+}
+
+.btn-icon.btn-star.active {
+    color: #fbbf24;
+}
+
+/* Date-Specific Section */
+.specific-dates-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.specific-date-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 16px;
+}
+
+.specific-date-item:last-child {
+    border-bottom: none;
+}
+
+.specific-date-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.specific-date-title {
+    font-weight: 500;
+    color: #333;
+}
+
+.specific-date-times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.specific-time-pill {
+    background: #f3f4f6;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.closed-badge {
+    background: #fef2f2;
+    color: #ef4444;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+}
+
+.modal-header {
+    padding: 24px 24px 16px;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 0 24px 24px;
+}
+
+.modal-footer {
+    padding: 16px 24px 24px;
+}
+
+/* Calendar Styles */
+.calendar-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.calendar-month-year {
+    font-weight: 600;
+    color: #333;
+}
+
+.calendar-header .btn {
+    color: #6b7280;
+    padding: 4px 8px;
+}
+
+.calendar-header .btn:hover {
+    background: #f3f4f6;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.calendar-weekdays span {
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+    padding: 4px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #333;
+}
+
+.calendar-day:hover {
+    background: #f3f4f6;
+}
+
+.calendar-day.other-month {
+    color: #d1d5db;
+}
+
+.calendar-day.selected {
+    background: #2563eb;
+    color: #fff;
+}
+
+.calendar-day.today {
+    border: 2px solid #2563eb;
+}
+
+.calendar-day.weekend {
+    color: #ef4444;
+}
+
+/* Specific Time Section in Modal */
+.specific-time-section {
+    margin-top: 16px;
+}
+
+.specific-time-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.specific-time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.specific-time-row .time-input {
+    width: 70px;
+}
+
+.specific-time-row .period-select {
+    width: 60px;
+}
+
+/* Save Button */
+#saveScheduleBtn {
+    background: #2563eb;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 500;
+}
+
+#saveScheduleBtn:hover {
+    background: #1d4ed8;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .main-content {
+        margin-left: 0;
+    }
+    
+    body.sidebar-expanded .main-content {
+        margin-left: 0;
+    }
+    
+    .time-slot-row {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 576px) {
+    .day-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .day-toggle {
+        width: 100%;
+    }
+    
+    .time-input {
+        width: 65px;
+    }
+    
+    .period-select {
+        width: 55px;
+    }
+}

@@ -1,0 +1,51 @@
+<!-- Profile Settings Modal -->
+<link rel="stylesheet" href="/css/profile.css">
+
+<div class="profile-modal-overlay" id="profileModalOverlay" onclick="closeProfileModal(event)">
+    <div class="profile-modal" onclick="event.stopPropagation()">
+        <!-- Close Button -->
+        <button class="profile-modal-close" onclick="closeProfileModal()">
+            <i class='bx bx-x'></i>
+        </button>
+
+        <!-- Profile Header -->
+        <div class="profile-modal-header">
+            <div class="profile-avatar-wrapper">
+                <img src="/assets/Malvar, Rhain B..jpg" alt="Profile" class="profile-avatar">
+                <button class="avatar-edit-btn">
+                    <i class='bx bx-pencil'></i>
+                </button>
+            </div>
+            <div class="profile-header-info">
+                <h4>Malvar, Rhain B.</h4>
+                <p>malvar.391122@santarosa.sti.edu.ph</p>
+            </div>
+        </div>
+
+        <!-- Profile Form -->
+        <div class="profile-modal-body">
+            <div class="profile-field">
+                <label>Name</label>
+                <input type="text" value="Rhain B. Malvar" id="profileName">
+            </div>
+            <div class="profile-field">
+                <label>Email account</label>
+                <input type="email" value="malvar.391122@santarosa.sti.edu.ph" id="profileEmail">
+            </div>
+            <div class="profile-field">
+                <label>Student number</label>
+                <input type="text" value="02000391122" id="profileStudentNumber">
+            </div>
+            <div class="profile-field">
+                <label>Branch</label>
+                <input type="text" value="Santa Rosa" id="profileBranch">
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="profile-modal-footer">
+            <button class="save-profile-btn" onclick="saveProfileChanges()">Save Change</button>
+        </div>
+    </div>
+</div>
+
