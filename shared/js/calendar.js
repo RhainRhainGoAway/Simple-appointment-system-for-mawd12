@@ -1,24 +1,49 @@
-/**
- * Calendar.js - Centralized Calendar Data & Initialization
- * This file contains all schedule data (subjects + consultations)
- * and initializes calendars for both dashboard and my-schedule pages.
+/*
+ * CALENDAR.JS - Centralized Calendar Data & Configuration
+ * Ito yung shared JS file para sa lahat ng calendar-related functionality
+ * 
+ * Bakit centralized?
+ * - Para isang lugar lang yung source of truth ng schedule data
+ * - Hindi na kailangan i-duplicate yung events sa iba't ibang files
+ * - Mas madali mag-maintain at mag-update
+ * 
+ * Main features:
+ * 1. Subject Events Data - Mga classes/subjects
+ * 2. Consultation Events Data - Mga booked consultations
+ * 3. Calendar Configurations - Shared settings for FullCalendar
+ * 4. Helper Functions - Utility functions for calendar operations
+ * 
+ * Dependencies: FullCalendar JS library
+ * 
+ * Note: Currently hardcoded yung data (demo mode)
+ * TODO: Replace with fetch() calls to PHP backend
  */
 
 // ============================================
 // CENTRALIZED SCHEDULE DATA
 // ============================================
 
-// Subject Events (Classes)
+/*
+ * Subject Events Array - Ito yung lahat ng classes/subjects
+ * Each event object contains:
+ * - title: Name ng subject
+ * - start/end: Date at time ng class (ISO 8601 format)
+ * - type: 'subject' para ma-identify kung anong klaseng event
+ * - classNames: CSS class para sa styling
+ * - backgroundColor/textColor/borderColor: Visual styling
+ * 
+ * TODO: In production, ito dapat galing sa database through PHP API
+ */
 const subjectEvents = [
-    // === MONDAY (Sept 22) ===
+    // ===== MONDAY (Sept 22) =====
     {
         title: 'Filipino sa Piling Larang',
         start: '2025-09-22T08:00:00',
         end: '2025-09-22T09:30:00',
         type: 'subject',
         classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
+        backgroundColor: '#f8f9fa',     // Light gray para sa subjects
+        textColor: '#374151',           // Dark gray text
         borderColor: '#d1d5db'
     },
     {
@@ -52,7 +77,7 @@ const subjectEvents = [
         borderColor: '#d1d5db'
     },
 
-    // === TUESDAY (Sept 23) ===
+    // ===== TUESDAY (Sept 23) =====
     {
         title: 'Filipino sa Piling Larang',
         start: '2025-09-23T08:00:00',
@@ -104,7 +129,7 @@ const subjectEvents = [
         borderColor: '#d1d5db'
     },
 
-    // === WEDNESDAY (Sept 24) ===
+    // ===== WEDNESDAY (Sept 24) =====
     {
         title: 'Physical Science',
         start: '2025-09-24T08:00:00',
@@ -136,7 +161,7 @@ const subjectEvents = [
         borderColor: '#d1d5db'
     },
 
-    // === THURSDAY (Sept 25) ===
+    // ===== THURSDAY (Sept 25) =====
     {
         title: 'Physical Science',
         start: '2025-09-25T08:00:00',
@@ -179,7 +204,12 @@ const subjectEvents = [
     }
 ];
 
-// Consultation Events (Appointments)
+/*
+ * Consultation Events Array - Ito yung mga booked consultations
+ * Yellow color para madaling makita na iba sila sa regular classes
+ * 
+ * TODO: Ito dapat dynamic galing sa bookings table sa database
+ */
 const consultationEvents = [
     {
         title: 'Ms. Kim Minju',
@@ -187,7 +217,7 @@ const consultationEvents = [
         end: '2025-09-22T09:50:00',
         type: 'consultation',
         classNames: ['consultation-event'],
-        backgroundColor: '#facc15',
+        backgroundColor: '#facc15',     // Yellow para stand out
         textColor: '#1a1a2e',
         borderColor: '#facc15'
     },
@@ -223,24 +253,41 @@ const consultationEvents = [
     }
 ];
 
-// Combined events (subjects + consultations)
+// Combine all events using spread operator
+// Ginagamit to kapag need i-display lahat sa My Schedule page
 const allEvents = [...subjectEvents, ...consultationEvents];
 
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
 
-// Get only consultation events (for dashboard)
+/**
+ * getConsultationEvents() - Returns only consultation events
+ * Ginagamit sa dashboard para i-show lang yung appointments
+ * 
+ * @returns array - Array ng consultation event objects
+ */
 function getConsultationEvents() {
     return consultationEvents;
 }
 
-// Get all events (for my-schedule)
+/**
+ * getAllEvents() - Returns lahat ng events (subjects + consultations)
+ * Ginagamit sa My Schedule page para complete view ng schedule
+ * 
+ * @returns array - Combined array ng lahat ng events
+ */
 function getAllEvents() {
     return allEvents;
 }
 
-// Format time for display
+/**
+ * formatTime() - Format date object to readable time string
+ * Helper function para consistent yung time display
+ * 
+ * @param date - JavaScript Date object
+ * @returns string - Formatted time like "10:30 AM"
+ */
 function formatTime(date) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
@@ -249,39 +296,50 @@ function formatTime(date) {
 // CALENDAR CONFIGURATIONS
 // ============================================
 
-// Shared/base configuration
+/*
+ * Base configuration - Shared settings para sa lahat ng calendars
+ * Para hindi na paulit-ulit i-define yung same settings
+ * Gamit ang object spread (...) para ma-inherit ng specific configs
+ */
 const baseCalendarConfig = {
-    initialDate: '2025-09-22',
-    slotMinTime: '07:00:00',
-    slotMaxTime: '18:00:00',
-    weekends: false,
-    allDaySlot: false,
-    height: 'auto'
+    initialDate: '2025-09-22',       // Starting date ng calendar
+    slotMinTime: '07:00:00',         // Start time (7 AM)
+    slotMaxTime: '18:00:00',         // End time (6 PM)
+    weekends: false,                  // Hide weekends
+    allDaySlot: false,               // No all-day row
+    height: 'auto'                   // Auto height
 };
 
-// Dashboard calendar configuration
+/*
+ * Dashboard Calendar Config - Para sa dashboard widget
+ * Simplified view na consultations lang ang i-display
+ */
 const dashboardCalendarConfig = {
-    ...baseCalendarConfig,
+    ...baseCalendarConfig,           // Inherit base settings
     initialView: 'timeGridWeek',
     headerToolbar: {
         left: 'prev,next today',
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,timeGridDay'
     },
-    slotDuration: '00:30:00',
+    slotDuration: '00:30:00',        // 30-minute slots
     slotLabelInterval: '01:00',
     eventDisplay: 'block',
     eventMinHeight: 20,
-    events: getConsultationEvents(),
+    events: getConsultationEvents(),  // Consultations lang
+    
+    // Click handler - redirect to My Schedule page
     eventClick: function(info) {
-        // Redirect to My Schedule page when clicking an event
         window.location.href = '/html/my-schedule.html';
     }
 };
 
-// My Schedule calendar configuration
+/*
+ * My Schedule Calendar Config - Full schedule view
+ * Shows both subjects and consultations
+ */
 const myScheduleCalendarConfig = {
-    ...baseCalendarConfig,
+    ...baseCalendarConfig,           // Inherit base settings
     initialView: 'timeGridWeek',
     headerToolbar: {
         left: 'prev',
@@ -291,7 +349,7 @@ const myScheduleCalendarConfig = {
     titleFormat: { weekday: 'short', day: 'numeric' },
     dayHeaderFormat: { weekday: 'short', day: 'numeric' },
     contentHeight: 700,
-    slotDuration: '01:00:00',
+    slotDuration: '01:00:00',        // 1-hour slots
     slotLabelInterval: '01:00',
     slotLabelFormat: {
         hour: 'numeric',
@@ -303,15 +361,19 @@ const myScheduleCalendarConfig = {
         minute: '2-digit',
         meridiem: 'short'
     },
-    events: getAllEvents(),
+    events: getAllEvents(),           // All events (subjects + consultations)
+    
+    // Click handler for consultation events
     eventClick: function(info) {
         if (info.event.extendedProps.type === 'consultation') {
             alert('Consultation with: ' + info.event.title + '\n' + 
                   'Time: ' + formatTime(info.event.start) + ' - ' + formatTime(info.event.end));
         }
     },
+    
+    // Handler kapag nagbago yung visible dates
     datesSet: function(dateInfo) {
-        // Update the month selector text
+        // Update month selector text
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                         'July', 'August', 'September', 'October', 'November', 'December'];
         const date = dateInfo.view.currentStart;
@@ -326,16 +388,18 @@ const myScheduleCalendarConfig = {
 // CALENDAR INITIALIZATION
 // ============================================
 
-// Initialize calendar based on which element exists on the page
+// DOMContentLoaded - Initialize appropriate calendar based sa page
 document.addEventListener('DOMContentLoaded', function() {
-    // Dashboard calendar (id="calendar")
+    // Dashboard calendar (sa dashboard pages)
+    // Check kung may element na id="calendar"
     const dashboardCalendarEl = document.getElementById('calendar');
     if (dashboardCalendarEl) {
         const dashboardCalendar = new FullCalendar.Calendar(dashboardCalendarEl, dashboardCalendarConfig);
         dashboardCalendar.render();
     }
 
-    // My Schedule calendar (id="schedule-calendar")
+    // My Schedule calendar (sa my-schedule pages)
+    // Check kung may element na id="schedule-calendar"
     const scheduleCalendarEl = document.getElementById('schedule-calendar');
     if (scheduleCalendarEl) {
         const scheduleCalendar = new FullCalendar.Calendar(scheduleCalendarEl, myScheduleCalendarConfig);
@@ -344,10 +408,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================
-// EVENT MANAGEMENT (for future use)
+// EVENT MANAGEMENT FUNCTIONS (for future use)
 // ============================================
 
-// Add a new consultation event
+/**
+ * addConsultation() - Add bagong consultation event
+ * Para sa future implementation ng real-time updates
+ * 
+ * @param title - Teacher/Student name
+ * @param start - Start datetime (ISO string)
+ * @param end - End datetime (ISO string)
+ * @returns object - Yung bagong event object
+ */
 function addConsultation(title, start, end) {
     const newEvent = {
         title: title,
@@ -363,7 +435,13 @@ function addConsultation(title, start, end) {
     return newEvent;
 }
 
-// Remove a consultation by index
+/**
+ * removeConsultation() - Remove consultation event by index
+ * Para sa cancellation functionality
+ * 
+ * @param index - Index ng event sa array
+ * @returns object|null - Yung removed event or null kung invalid index
+ */
 function removeConsultation(index) {
     if (index >= 0 && index < consultationEvents.length) {
         return consultationEvents.splice(index, 1);
@@ -371,7 +449,12 @@ function removeConsultation(index) {
     return null;
 }
 
-// Get consultation count (for dashboard stats)
+/**
+ * getConsultationCount() - Get total number of consultations
+ * Para sa dashboard statistics
+ * 
+ * @returns number - Count ng consultations
+ */
 function getConsultationCount() {
     return consultationEvents.length;
 }

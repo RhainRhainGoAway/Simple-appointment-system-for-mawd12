@@ -1,0 +1,612 @@
+
+.home {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+.profile-btn {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 10px 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+}
+.profile-btn:hover {
+    background: #f8f9fa;
+}
+.profile-btn img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.profile-info {
+    text-align: left;
+}
+.profile-info .name {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+}
+.profile-info .student-id {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0;
+}
+.profile-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    min-width: 250px;
+    padding: 16px;
+    display: none;
+    z-index: 1000;
+    margin-top: 8px;
+}
+.profile-menu.show {
+    display: block;
+}
+.profile-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 12px;
+}
+.profile-menu-header img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+.profile-menu-header .name {
+    font-weight: 600;
+    margin: 0;
+}
+.profile-menu-header .email {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0;
+}
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #333;
+}
+.profile-menu-item:hover {
+    background: #f8f9fa;
+}
+
+/* Consultation Schedule Card */
+.schedule-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.schedule-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+.schedule-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.schedule-nav button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    background: white;
+    cursor: pointer;
+}
+.schedule-nav button:hover {
+    background: #f8f9fa;
+}
+.schedule-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.filter-btn, .view-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Calendar Grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(5, 1fr);
+    gap: 1px;
+    background: #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.calendar-header {
+    background: #f8f9fa;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+.time-slot {
+    background: white;
+    padding: 20px 8px;
+    font-size: 12px;
+    color: #6c757d;
+    text-align: center;
+}
+.calendar-cell {
+    background: white;
+    padding: 8px;
+    min-height: 60px;
+    position: relative;
+}
+.appointment {
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.appointment img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+.appointment.blue {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+.appointment.green {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+.appointment.orange {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+/* Right Sidebar */
+.right-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 450px;
+    height: 100vh;
+    background: #f8f9fa;
+    padding: 24px 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.sidebar-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.sidebar-card.available-teachers {
+    flex-shrink: 0;
+    margin-top: 10px;
+}
+.sidebar-card.consultation-history {
+    margin-bottom: 0;
+}
+.sidebar-card h6 {
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+.date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.date-nav button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.teacher-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.teacher-item:last-child {
+    border-bottom: none;
+}
+.teacher-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.teacher-info img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+.request-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #2196f3;
+    background: #e3f2fd;
+    color: #2196f3;
+    font-size: 12px;
+    cursor: pointer;
+}
+.request-btn:hover {
+    background: #2196f3;
+    color: white;
+}
+
+/* Consultation History */
+.history-table {
+    width: 100%;
+    font-size: 12px;
+}
+.history-table th {
+    color: #6c757d;
+    font-weight: 500;
+    padding: 8px 4px;
+    text-align: left;
+}
+.history-table td {
+    padding: 10px 4px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+.history-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.history-item img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+/* Adjust main content for right sidebar */
+.main-content {
+    margin-right: 450px;
+    padding-left: 15px;
+    transition: all 0.3s ease;
+}
+
+/* Right Sidebar Responsive */
+@media screen and (max-width: 1400px) {
+    .right-sidebar {
+        width: 380px;
+    }
+    .main-content {
+        margin-right: 380px;
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .right-sidebar {
+        width: 320px;
+        padding: 16px;
+    }
+    .main-content {
+        margin-right: 320px;
+    }
+    .sidebar-card {
+        padding: 16px;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .right-sidebar {
+        position: fixed;
+        right: -350px;
+        width: 320px;
+        transition: all 0.3s ease;
+        z-index: 99;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+    }
+    .right-sidebar.open {
+        right: 0;
+    }
+    .main-content {
+        margin-right: 0;
+    }
+    .right-sidebar-toggle {
+        display: flex;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .right-sidebar {
+        width: 100%;
+        right: -100%;
+    }
+    .right-sidebar.open {
+        right: 0;
+    }
+}
+
+/* Right sidebar toggle button (hidden by default, shown on smaller screens) */
+.right-sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 98;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.right-sidebar-toggle:hover {
+    background: #f8f9fa;
+}
+
+/* FullCalendar Custom Styles - Modern Design */
+#calendar {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.fc {
+    font-family: inherit;
+}
+.fc-toolbar {
+    margin-bottom: 20px !important;
+}
+.fc-toolbar-title {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: #1a1a2e;
+}
+.fc-button {
+    background-color: #f8f9fa !important;
+    border: none !important;
+    color: #333 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 8px 14px !important;
+    border-radius: 10px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+.fc-button:hover {
+    background-color: #e8f4fd !important;
+    color: #1570EF !important;
+}
+.fc-button:focus {
+    box-shadow: none !important;
+}
+.fc-button-active {
+    background-color: #1570EF !important;
+    color: white !important;
+}
+.fc-button-active:hover {
+    background-color: #1259c7 !important;
+    color: white !important;
+}
+.fc-prev-button, .fc-next-button {
+    padding: 8px 10px !important;
+}
+.fc-today-button {
+    text-transform: capitalize !important;
+}
+.fc-today-button:disabled {
+    opacity: 0.5 !important;
+}
+
+/* Day/Week Headers */
+.fc-col-header {
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+.fc-col-header-cell {
+    padding: 14px 0 !important;
+    border: none !important;
+}
+.fc-col-header-cell-cushion {
+    font-weight: 600;
+    font-size: 13px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.fc-day-today .fc-col-header-cell-cushion {
+    color: #1570EF;
+}
+
+/* Time Grid */
+.fc-timegrid-slot {
+    height: 60px !important;
+    border-color: #f1f5f9 !important;
+}
+.fc-timegrid-slot-label {
+    border: none !important;
+}
+.fc-timegrid-slot-label-cushion {
+    font-size: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    padding-right: 12px !important;
+}
+.fc-timegrid-divider {
+    display: none;
+}
+.fc-timegrid-axis {
+    border: none !important;
+}
+
+/* Grid Lines */
+.fc-scrollgrid {
+    border: none !important;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.fc-scrollgrid td, .fc-scrollgrid th {
+    border-color: #f1f5f9 !important;
+}
+.fc-timegrid-col {
+    border-color: #f1f5f9 !important;
+}
+
+/* Today highlight */
+.fc-day-today {
+    background: rgba(21, 112, 239, 0.04) !important;
+}
+.fc-timegrid-col.fc-day-today {
+    background: rgba(21, 112, 239, 0.04) !important;
+}
+
+/* Events */
+.fc-event {
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+    min-height: 20px !important;
+    overflow: visible !important;
+}
+.fc-event:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 10 !important;
+}
+.fc-event-main {
+    padding: 1px 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: visible !important;
+}
+.fc-event-time {
+    font-weight: 700 !important;
+    font-size: 10px !important;
+    white-space: nowrap;
+}
+.fc-event-title {
+    font-weight: 600 !important;
+    font-size: 10px !important;
+    white-space: nowrap;
+    overflow: visible !important;
+}
+.fc-timegrid-event {
+    border-radius: 6px !important;
+}
+.fc-timegrid-event .fc-event-main {
+    padding: 2px 4px !important;
+}
+.fc-timegrid-event-harness {
+    overflow: visible !important;
+}
+
+/* Month View Events - Show only title, hide time */
+.fc-daygrid-event {
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    margin: 1px 2px !important;
+}
+.fc-daygrid-event .fc-event-time {
+    display: none !important;
+}
+.fc-daygrid-event .fc-event-title {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+}
+.fc-daygrid-dot-event {
+    padding: 2px 4px !important;
+}
+.fc-daygrid-dot-event .fc-event-time {
+    display: none !important;
+}
+.fc-daygrid-block-event {
+    border-radius: 4px !important;
+}
+.fc-daygrid-day-events {
+    margin-top: 4px !important;
+}
+
+/* Now indicator */
+.fc-timegrid-now-indicator-line {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+}
+.fc-timegrid-now-indicator-arrow {
+    border-color: #ef4444 !important;
+    border-top-color: transparent !important;
+    border-bottom-color: transparent !important;
+}
+
+/* Scrollbar styling */
+.fc-scroller::-webkit-scrollbar {
+    width: 6px;
+}
+.fc-scroller::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+.fc-scroller::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+.fc-scroller::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

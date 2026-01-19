@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule - Teacher</title>
+
+    <!--CSS-->
+    <link rel="stylesheet" href="../../../shared/css/sidebar.css">
+    <link rel="stylesheet" href="./my-schedule.css">
+
+    <!--Bootstrap 5 CSS-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" 
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!--box icons para sa mga icons na gagamitin-->
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+
+    <!--FullCalendar CSS-->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet'>
+</head>
+<body>
+    <!-- Sidebar will be injected here -->
+    <div id="sidebar-container"></div>
+
+    <!-- Page-specific content -->
+    <section class="home">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2>My Schedule</h2>
+            <p>View your teaching schedule and student consultations</p>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="month-selector">
+            <i class='bx bx-calendar'></i>
+            <span id="currentMonth">September 2025</span>
+            <i class='bx bx-chevron-down'></i>
+        </div>
+
+        <!-- Full Calendar -->
+        <div id="schedule-calendar"></div>
+    </section>
+
+    <script src="/appointment_system/shared/js/load-sidebar-teacher.js"></script>
+
+    <!--Bootstrap 5 JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <!--FullCalendar JS-->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
+    <!--Calendar JS (centralized calendar data & initialization)-->
+    <script src="../../../shared/js/calendar.js"></script>
+
+    <!--My Schedule JS-->
+    <script src="./my-schedule.js"></script>
+</body>
+</html>

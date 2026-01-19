@@ -1,37 +1,88 @@
-// Initialize My Schedule FullCalendar
+/*
+ * MY-SCHEDULE.JS (TEACHER) - Teacher's Personal Schedule View
+ * Ito yung JS file para sa "My Schedule" page ng teacher
+ * 
+ * Main features:
+ * 1. FullCalendar Integration - Para i-display yung weekly schedule
+ * 2. Subject Events - Mga classes na tinuturo ng teacher
+ * 3. Consultation Events - Mga booked consultations with students
+ * 
+ * Dependencies:
+ * - FullCalendar JS library (CDN or local)
+ * - FullCalendar CSS
+ * 
+ * Note: Same structure sa student version, pero iba yung data perspective
+ * Sa teacher view, nakikita niya yung appointments niya with students
+ * TODO: Fetch events from PHP backend/database
+ */
+
+// ============================================
+// FULLCALENDAR INITIALIZATION
+// ============================================
+
+// DOMContentLoaded - Initialize calendar kapag ready na yung page
 document.addEventListener('DOMContentLoaded', function() {
+    // Get yung calendar container element
     var calendarEl = document.getElementById('schedule-calendar');
+    
+    // Check kung may calendar container ba sa page
     if (calendarEl) {
+        // Create FullCalendar instance with configuration
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek',
-            initialDate: '2025-09-22',
+            // ============================================
+            // CALENDAR VIEW SETTINGS
+            // ============================================
+            initialView: 'timeGridWeek',     // Weekly view na may time grid
+            initialDate: '2025-09-22',       // Starting date (demo date)
+            
+            // Header toolbar configuration - navigation buttons
             headerToolbar: {
-                left: 'prev',
-                center: 'title',
-                right: 'next'
+                left: 'prev',                // Previous button sa left
+                center: 'title',             // Title sa center
+                right: 'next'                // Next button sa right
             },
+            
+            // ============================================
+            // DATE/TIME FORMATTING
+            // ============================================
             titleFormat: { weekday: 'short', day: 'numeric' },
-            dayHeaderFormat: { weekday: 'short', day: 'numeric' },
-            slotMinTime: '07:00:00',
-            slotMaxTime: '18:00:00',
-            weekends: false,
-            allDaySlot: false,
+            dayHeaderFormat: { weekday: 'short', day: 'numeric' },  // Column headers
+            
+            // Time slot configuration
+            slotMinTime: '07:00:00',          // Start ng visible time (7 AM)
+            slotMaxTime: '18:00:00',          // End ng visible time (6 PM)
+            weekends: false,                  // Hide weekends
+            allDaySlot: false,                // Hindi kailangan ng all-day row
+            
+            // ============================================
+            // SIZING AND APPEARANCE
+            // ============================================
             height: 'auto',
             contentHeight: 700,
-            slotDuration: '01:00:00',
+            slotDuration: '01:00:00',         // 1 hour per slot
             slotLabelInterval: '01:00',
+            
+            // Time label format (left side)
             slotLabelFormat: {
                 hour: 'numeric',
                 minute: '2-digit',
                 meridiem: 'short'
             },
+            
+            // Event time format
             eventTimeFormat: {
                 hour: 'numeric',
                 minute: '2-digit',
                 meridiem: 'short'
             },
+            
+            // ============================================
+            // EVENTS DATA (HARDCODED FOR DEMO)
+            // ============================================
+            // TODO: Replace with fetch() call to PHP API
+            // Sa teacher view, yung consultation events ay yung students na nag-book
             events: [
-                // === MONDAY (Sept 22) ===
+                // ===== MONDAY (Sept 22) =====
                 {
                     title: 'Filipino sa Piling Larang',
                     start: '2025-09-22T08:00:00',
@@ -41,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     textColor: '#374151',
                     borderColor: '#d1d5db'
                 },
+                // Sa teacher view, ang consultation event ay yung student na nag-book
                 {
                     title: 'Ms. Kim Minju',
                     start: '2025-09-22T09:30:00',
