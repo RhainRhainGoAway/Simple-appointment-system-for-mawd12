@@ -257,26 +257,10 @@ const consultationEvents = [
 // Ginagamit to kapag need i-display lahat sa My Schedule page
 const allEvents = [...subjectEvents, ...consultationEvents];
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-/**
- * getConsultationEvents() - Returns only consultation events
- * Ginagamit sa dashboard para i-show lang yung appointments
- * 
- * @returns array - Array ng consultation event objects
- */
 function getConsultationEvents() {
     return consultationEvents;
 }
 
-/**
- * getAllEvents() - Returns lahat ng events (subjects + consultations)
- * Ginagamit sa My Schedule page para complete view ng schedule
- * 
- * @returns array - Combined array ng lahat ng events
- */
 function getAllEvents() {
     return allEvents;
 }
@@ -297,9 +281,9 @@ function formatTime(date) {
 // ============================================
 
 /*
- * Base configuration - Shared settings para sa lahat ng calendars
+ * Shared settings para sa lahat ng calendars
  * Para hindi na paulit-ulit i-define yung same settings
- * Gamit ang object spread (...) para ma-inherit ng specific configs
+ * object spread (...) para ma-inherit ng specific configs
  */
 const baseCalendarConfig = {
     initialDate: '2025-09-22',       // Starting date ng calendar
@@ -367,7 +351,7 @@ const myScheduleCalendarConfig = {
     eventClick: function(info) {
         if (info.event.extendedProps.type === 'consultation') {
             alert('Consultation with: ' + info.event.title + '\n' + 
-                  'Time: ' + formatTime(info.event.start) + ' - ' + formatTime(info.event.end));
+                'Time: ' + formatTime(info.event.start) + ' - ' + formatTime(info.event.end));
         }
     },
     
@@ -384,13 +368,10 @@ const myScheduleCalendarConfig = {
     }
 };
 
-// ============================================
-// CALENDAR INITIALIZATION
-// ============================================
 
-// DOMContentLoaded - Initialize appropriate calendar based sa page
+
+// Initialize appropriate calendar based sa page
 document.addEventListener('DOMContentLoaded', function() {
-    // Dashboard calendar (sa dashboard pages)
     // Check kung may element na id="calendar"
     const dashboardCalendarEl = document.getElementById('calendar');
     if (dashboardCalendarEl) {
@@ -398,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function() {
         dashboardCalendar.render();
     }
 
-    // My Schedule calendar (sa my-schedule pages)
     // Check kung may element na id="schedule-calendar"
     const scheduleCalendarEl = document.getElementById('schedule-calendar');
     if (scheduleCalendarEl) {
@@ -407,19 +387,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ============================================
-// EVENT MANAGEMENT FUNCTIONS (for future use)
-// ============================================
 
-/**
- * addConsultation() - Add bagong consultation event
- * Para sa future implementation ng real-time updates
- * 
- * @param title - Teacher/Student name
- * @param start - Start datetime (ISO string)
- * @param end - End datetime (ISO string)
- * @returns object - Yung bagong event object
- */
+
+
+// Add bagong consultation event Para sa future implementation ng real-time updates
 function addConsultation(title, start, end) {
     const newEvent = {
         title: title,
@@ -435,13 +406,8 @@ function addConsultation(title, start, end) {
     return newEvent;
 }
 
-/**
- * removeConsultation() - Remove consultation event by index
- * Para sa cancellation functionality
- * 
- * @param index - Index ng event sa array
- * @returns object|null - Yung removed event or null kung invalid index
- */
+
+// Remove consultation event by index
 function removeConsultation(index) {
     if (index >= 0 && index < consultationEvents.length) {
         return consultationEvents.splice(index, 1);
@@ -449,12 +415,10 @@ function removeConsultation(index) {
     return null;
 }
 
-/**
- * getConsultationCount() - Get total number of consultations
- * Para sa dashboard statistics
- * 
- * @returns number - Count ng consultations
- */
+
+// Get total number of consultations para sa dashboard statistics
+
+
 function getConsultationCount() {
     return consultationEvents.length;
 }

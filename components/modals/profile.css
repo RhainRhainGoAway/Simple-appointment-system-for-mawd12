@@ -64,6 +64,9 @@
 
 .profile-avatar-wrapper {
     position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
 }
 
 .profile-avatar {
@@ -71,12 +74,13 @@
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
+    display: block;
 }
 
 .avatar-edit-btn {
     position: absolute;
-    bottom: 0;
-    right: 0;
+    bottom: -2px;
+    right: -2px;
     width: 28px;
     height: 28px;
     border-radius: 50%;

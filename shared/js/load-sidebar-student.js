@@ -1,14 +1,4 @@
-/*
- * LOAD-SIDEBAR-STUDENT.JS - Dynamic Sidebar Loader for Student Pages
- * Ito yung JS file na naglo-load ng sidebar dynamically para sa student pages
- * 
- * Bakit dynamic loading?
- * - Para hindi na kailangan i-copy paste yung sidebar HTML sa every page
- * - Mas madali mag-maintain kasi isang file lang babaguhin mo
- * - Cleaner code at mas organized yung project structure
- * 
- * Dependencies: sidebar-student.html sa components/sidebar folder
- */
+
 
 // ============================================
 // SIDEBAR LOADING ON PAGE LOAD
@@ -19,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hanapin yung container kung saan ilalagay yung sidebar
     const sidebarContainer = document.getElementById('sidebar-container');
     
-    // Check muna kung may container ba talaga (para hindi mag-error)
+    // Check muna kung may container ba talaga 
     if (sidebarContainer) {
         // Fetch API - modern way para mag-request ng data/files
         // Kinukuha natin yung HTML content ng sidebar file
@@ -44,8 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================
 
 /**
- * initSidebarToggle() - Initialize yung sidebar open/close functionality
- * Kapag clinick yung toggle button (hamburger icon), mag-oopen or close yung sidebar
+ * Initialize yung sidebar open/close functionality
+ * Kapag clinick yung toggle button , mag-oopen or close yung sidebar
  * Ginagamit to para sa responsive design at space management
  */
 function initSidebarToggle() {

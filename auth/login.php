@@ -1,14 +1,4 @@
 <?php
-/*
- * LOGIN.PHP - Login/Registration Page with PHP Logic
- * Ito yung front-end page ng login at registration
- * May PHP code sa taas para i-handle yung error messages at active form state
- * 
- * Flow nito:
- * 1. User mag-submit ng form -> pupunta sa login_register.php
- * 2. Kung may error, babalik dito with error message sa session
- * 3. I-display yung error at i-maintain kung anong form ang active
- */
 
 // Start session para ma-access yung session variables
 session_start();
