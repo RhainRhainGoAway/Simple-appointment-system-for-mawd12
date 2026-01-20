@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();  // Ito yung nag-pipigil sa form na mag-submit
                 
                 // Alert para sa user
-                alert('Please use a valid @one.sti.edu.ph email address');
+                alert('Please use a valid @santarosa.sti.edu.ph email address');
                 
                 // Focus ulit sa email input para madali mag-edit
                 emailInput.focus();
