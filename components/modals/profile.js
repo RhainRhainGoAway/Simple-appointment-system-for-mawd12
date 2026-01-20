@@ -1,15 +1,3 @@
-/*
- * PROFILE.JS - Profile Modal JavaScript Functionality
- * Ito yung JS file para sa profile modal/popup
- * 
- * Main features:
- * 1. Open Profile Modal - Para i-display yung profile edit form
- * 2. Close Profile Modal - Para i-close yung modal
- * 3. Save Profile Changes - Para i-save yung mga changes sa profile
- * 
- * Note: Yung actual saving sa database, kailangan pa ng PHP backend
- * For now, console.log lang muna yung output (demo purposes)
- */
 
 // ============================================
 // OPEN PROFILE MODAL
