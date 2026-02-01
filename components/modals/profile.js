@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * PROFILE.JS - Profile Modal JavaScript Functionality
  * Ito yung JS file para sa profile modal/popup
