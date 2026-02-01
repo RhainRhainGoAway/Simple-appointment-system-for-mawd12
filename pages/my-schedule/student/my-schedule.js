@@ -12,7 +12,7 @@
  * - FullCalendar CSS
  * 
  * Note: Currently, hardcoded pa yung events data (demo mode)
- * TODO: Fetch events from PHP backend/database
+ * TODO: Fetch events from .NET API/database
  */
 
 // ============================================
@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // ============================================
             // EVENTS DATA (HARDCODED FOR DEMO)
             // ============================================
-            // TODO: Replace with fetch() call to PHP API
-            // Example: events: '/api/getStudentSchedule.php'
+            // TODO: Replace with fetch() call to .NET API
+            // Example: events: `${API_BASE}/schedules/student`
             events: [
                 // ===== MONDAY (Sept 22) =====
                 // Subject events - mga klase ng student

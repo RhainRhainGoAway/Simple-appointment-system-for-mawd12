@@ -8,7 +8,7 @@
  * 3. Booking Confirmation - I-handle yung booking submission
  * 
  * Note: Currently, yung booking ay console.log lang (demo mode)
- * Kailangan pa ng PHP backend para i-save sa database
+ * Kailangan pa ng .NET API backend para i-save sa database
  */
 
 // ============================================
@@ -282,7 +282,7 @@ function openBookingModal(teacherName, date, timeRange) {
     bookingState.endTime = endTime.trim();
     
     // Example booked slots (sa real app, galing to sa server/database)
-    // TODO: Fetch from PHP backend kung ano na yung booked slots
+    // TODO: Fetch from .NET API kung ano na yung booked slots
     bookingState.bookedSlots = ['10:00-10:10'];
     
     // Update modal content with teacher info
@@ -310,7 +310,7 @@ function openBookingModal(teacherName, date, timeRange) {
  * confirmBooking() - Handler para sa final booking confirmation
  * Validates yung form at sends booking data (currently console.log lang)
  * 
- * TODO: Implement actual AJAX request to PHP backend para ma-save sa database
+ * TODO: Implement actual AJAX request to .NET API para ma-save sa database
  */
 function confirmBooking() {
     // Get notes from textarea
@@ -329,8 +329,7 @@ function confirmBooking() {
     }
     
     // TODO: AJAX request to save booking sa database
-    // fetch('/api/bookConsultation', { method: 'POST', body: JSON.stringify(bookingState) })
-    console.log('Booking confirmed:', bookingState);
+    // apiCall('/appointments', { method: 'POST', body: JSON.stringify(bookingState) })
     
     // Success message (simple alert for now)
     // TODO: Gawing mas magandang success modal or toast notification

@@ -35,19 +35,19 @@
             <!-- Profile Dropdown -->
             <div class="profile-dropdown">
                 <div class="profile-btn" onclick="toggleProfileMenu()">
-                    <img src="../../../assets/Malvar, Rhain B..jpg" alt="Profile">
+                    <img src="../../../assets/default-avatar.png" alt="Profile" id="profileBtnAvatar">
                     <div class="profile-info">
-                        <p class="name">Malvar, Rhain B.</p>
-                        <p class="student-id">02000 391123</p>
+                        <p class="name" id="profileBtnName">Loading...</p>
+                        <p class="student-id" id="profileBtnStudentId">Loading...</p>
                     </div>
                     <i class='bx bx-chevron-down'></i>
                 </div>
                 <div class="profile-menu" id="profileMenu">
                     <div class="profile-menu-header">
-                        <img src="../../../assets/Malvar, Rhain B..jpg" alt="Profile">
+                        <img src="../../../assets/default-avatar.png" alt="Profile" id="profileMenuAvatar">
                         <div>
-                            <p class="name">Malvar, Rhain B.</p>
-                            <p class="email">malvar.391122@santarosa.sti.edu.ph</p>
+                            <p class="name" id="profileMenuName">Loading...</p>
+                            <p class="email" id="profileMenuEmail">Loading...</p>
                         </div>
                     </div>
                     <a href="#" class="profile-menu-item" onclick="openProfileModal(); return false;">
@@ -199,6 +199,7 @@
     <!-- Profile Modal Container -->
     <div id="profile-modal-container"></div>
 
+    <script src="/appointment_system/shared/js/api.js"></script>
     <script src="/appointment_system/shared/js/load-sidebar-student.js"></script>
 
     <!--Bootstrap 5 JS-->

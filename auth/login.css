@@ -88,13 +88,17 @@ p a:hover {
 }
 
 .error-message {
-    display: block;
-    padding: 12px !important;
-    background: #f8d7da !important;
-    border-radius: 6px !important;
+    display: none;
+    padding: 12px;
+    background: #f8d7da;
+    border-radius: 6px;
     font-size: 16px;
-    color: #a42834 !important;
+    color: #a42834;
     text-align: center;
     margin-bottom: 20px;
+}
+
+.error-message:not(:empty) {
+    display: block;
 }
 

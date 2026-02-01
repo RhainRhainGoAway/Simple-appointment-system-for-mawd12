@@ -13,7 +13,7 @@
  * 
  * Note: Same structure sa student version, pero iba yung data perspective
  * Sa teacher view, nakikita niya yung appointments niya with students
- * TODO: Fetch events from PHP backend/database
+ * TODO: Fetch events from .NET API/database
  */
 
 // ============================================
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // ============================================
             // EVENTS DATA (HARDCODED FOR DEMO)
             // ============================================
-            // TODO: Replace with fetch() call to PHP API
+            // TODO: Replace with fetch() call to .NET API
             // Sa teacher view, yung consultation events ay yung students na nag-book
             events: [
                 // ===== MONDAY (Sept 22) =====

@@ -16,7 +16,7 @@
  * Dependencies: FullCalendar JS library
  * 
  * Note: Currently hardcoded yung data (demo mode)
- * TODO: Replace with fetch() calls to PHP backend
+ * TODO: Replace with fetch() calls to .NET API
  */
 
 // ============================================
@@ -32,7 +32,7 @@
  * - classNames: CSS class para sa styling
  * - backgroundColor/textColor/borderColor: Visual styling
  * 
- * TODO: In production, ito dapat galing sa database through PHP API
+ * TODO: In production, ito dapat galing sa database through .NET API
  */
 const subjectEvents = [
     // ===== MONDAY (Sept 22) =====

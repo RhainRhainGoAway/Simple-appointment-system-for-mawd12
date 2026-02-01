@@ -1,0 +1,23 @@
+@AppointmentSystemAPI_HostAddress = http://localhost:5000/api
+
+# Test Auth Login
+POST {{AppointmentSystemAPI_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+###
+
+# Get Current User
+GET {{AppointmentSystemAPI_HostAddress}}/auth/me
+Authorization: Bearer {{$dotenv TOKEN}}
+
+###
+
+# Get Sections
+GET {{AppointmentSystemAPI_HostAddress}}/sections
+
+###

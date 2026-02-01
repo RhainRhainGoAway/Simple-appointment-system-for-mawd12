@@ -5,11 +5,157 @@
  * Main features:
  * 1. Open Profile Modal - Para i-display yung profile edit form
  * 2. Close Profile Modal - Para i-close yung modal
- * 3. Save Profile Changes - Para i-save yung mga changes sa profile
- * 
- * Note: Yung actual saving sa database, kailangan pa ng PHP backend
- * For now, console.log lang muna yung output (demo purposes)
+ * 3. Load Profile Data - Load real user data from localStorage
+ * 4. Upload Profile Picture - Para mag-upload ng profile picture
  */
+
+// API Configuration
+const PROFILE_API_BASE = 'http://localhost:5000/api';
+
+// ============================================
+// LOAD PROFILE DATA
+// ============================================
+
+/**
+ * loadProfileData() - Function para i-load yung user data sa profile modal
+ * Kukunin from localStorage (set during login)
+ */
+function loadProfileData() {
+    // Get data from localStorage (set during login)
+    const userName = localStorage.getItem('userName') || '';
+    const userEmail = localStorage.getItem('userEmail') || '';
+    const userRole = localStorage.getItem('userRole') || '';
+    const studentNumber = localStorage.getItem('userStudentNumber') || '';
+    const profilePicture = localStorage.getItem('userProfilePicture') || '';
+    
+    // Update profile header
+    const headerName = document.getElementById('profileHeaderName');
+    const headerEmail = document.getElementById('profileHeaderEmail');
+    
+    if (headerName) headerName.textContent = userName || 'User';
+    if (headerEmail) headerEmail.textContent = userEmail || 'No email';
+    
+    // Update profile avatar
+    const profileAvatar = document.getElementById('profileAvatar');
+    if (profileAvatar) {
+        profileAvatar.src = profilePicture || '/assets/default-avatar.png';
+    }
+    
+    // Update form fields
+    const nameInput = document.getElementById('profileName');
+    const emailInput = document.getElementById('profileEmail');
+    const studentNumberInput = document.getElementById('profileStudentNumber');
+    const studentNumberField = document.getElementById('studentNumberField');
+    
+    if (nameInput) nameInput.value = userName;
+    if (emailInput) emailInput.value = userEmail;
+    
+    // Show/hide student number field based on role
+    if (studentNumberField) {
+        if (userRole === 'teacher') {
+            studentNumberField.style.display = 'none';
+        } else {
+            studentNumberField.style.display = 'block';
+            if (studentNumberInput) studentNumberInput.value = studentNumber;
+        }
+    }
+    // Branch is static - already set to "Santa Rosa" in HTML
+}
+
+// ============================================
+// HANDLE PROFILE PICTURE CHANGE
+// ============================================
+
+/**
+ * handleProfilePictureChange() - Handle when user selects a new profile picture
+ */
+async function handleProfilePictureChange(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+    }
+    
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Image size must be less than 2MB.');
+        return;
+    }
+    
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const base64Image = e.target.result;
+        
+        // Update preview immediately
+        const profileAvatar = document.getElementById('profileAvatar');
+        if (profileAvatar) {
+            profileAvatar.src = base64Image;
+        }
+        
+        // Upload to server
+        await uploadProfilePicture(base64Image);
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * uploadProfilePicture() - Upload the profile picture to the server
+ */
+async function uploadProfilePicture(base64Image) {
+    const token = localStorage.getItem('token');
+    
+    try {
+        const response = await fetch(`${PROFILE_API_BASE}/auth/profile/picture`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                profilePicture: base64Image
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update localStorage
+            localStorage.setItem('userProfilePicture', base64Image);
+            
+            // Update all profile images on the page
+            updateAllProfileImages(base64Image);
+            
+            alert('Profile picture updated successfully!');
+        } else {
+            const errorData = await response.json();
+            alert(errorData.message || 'Failed to update profile picture.');
+        }
+    } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        alert('Connection error. Please try again.');
+    }
+}
+
+/**
+ * updateAllProfileImages() - Update all profile images on the page
+ */
+function updateAllProfileImages(imageUrl) {
+    // Update profile button avatar
+    const profileBtnAvatar = document.getElementById('profileBtnAvatar');
+    if (profileBtnAvatar) profileBtnAvatar.src = imageUrl;
+    
+    // Update profile menu avatar
+    const profileMenuAvatar = document.getElementById('profileMenuAvatar');
+    if (profileMenuAvatar) profileMenuAvatar.src = imageUrl;
+    
+    // Update profile modal avatar
+    const profileAvatar = document.getElementById('profileAvatar');
+    if (profileAvatar) profileAvatar.src = imageUrl;
+}
 
 // ============================================
 // OPEN PROFILE MODAL
@@ -20,9 +166,10 @@
  * Ginagamit ang CSS classes para sa smooth animation
  * 
  * Flow:
- * 1. Display yung modal overlay (flex para centered)
- * 2. Add 'show' class after slight delay (para mag-trigger yung CSS animation)
- * 3. Close yung profile dropdown menu (cleanup)
+ * 1. Load profile data from localStorage
+ * 2. Display yung modal overlay (flex para centered)
+ * 3. Add 'show' class after slight delay (para mag-trigger yung CSS animation)
+ * 4. Close yung profile dropdown menu (cleanup)
  */
 function openProfileModal() {
     const modal = document.getElementById('profileModalOverlay');
@@ -33,18 +180,18 @@ function openProfileModal() {
         return;
     }
     
+    // Load profile data first
+    loadProfileData();
+    
     // Display yung modal
     modal.style.display = 'flex';
     
     // setTimeout para sa smooth animation
-    // Kailangan ng slight delay para ma-trigger yung CSS transition
-    // Reflow trick basically to
     setTimeout(() => {
         modal.classList.add('show');
     }, 10);
     
     // Close yung profile dropdown menu na nag-open ng modal
-    // Para clean yung UI
     const profileMenu = document.getElementById('profileMenu');
     if (profileMenu) {
         profileMenu.classList.remove('show');
@@ -83,35 +230,14 @@ function closeProfileModal(event) {
 }
 
 // ============================================
-// SAVE PROFILE CHANGES
+// CLOSE PROFILE (via button - just closes modal)
 // ============================================
 
 /**
- * saveProfileChanges() - Function para i-save yung profile changes
- * Currently, console.log lang muna (demo mode)
- * 
- * TODO (Future Implementation):
- * - AJAX request papunta sa PHP backend
- * - PHP file na mag-UPDATE sa database
- * - Proper validation at error handling
+ * saveProfileChanges() - Closes the profile modal
+ * Profile fields are read-only, so this just closes the modal
  */
 function saveProfileChanges() {
-    // Kunin lahat ng values galing sa form inputs
-    const name = document.getElementById('profileName').value;
-    const email = document.getElementById('profileEmail').value;
-    const studentNumber = document.getElementById('profileStudentNumber').value;
-    const branch = document.getElementById('profileBranch').value;
-
-    // TODO: Dito dapat may AJAX/fetch request papunta sa server
-    // Para i-update yung database
-    // Example: fetch('/api/updateProfile', { method: 'POST', body: JSON.stringify(data) })
-    console.log('Saving profile:', { name, email, studentNumber, branch });
-    
-    // Show success message (simple alert lang muna)
-    // TODO: Gawing mas magandang notification/toast message
-    alert('Profile changes saved successfully!');
-    
-    // Close yung modal after save
     closeProfileModal();
 }
 

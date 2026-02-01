@@ -9,7 +9,7 @@
  * 4. Save/Load Schedule - Para i-persist yung schedule data
  * 
  * Note: Currently ginagamit ang localStorage for storage (demo mode)
- * TODO: Implement PHP backend para i-save sa database
+ * TODO: Implement .NET API backend para i-save sa database
  */
 
 // ============================================
@@ -585,7 +585,7 @@ function removeSpecificDate(index) {
  * loadSavedSchedule() - Load previously saved schedule from localStorage
  * Called on page initialization para i-restore yung saved data
  * 
- * TODO: In production, palitan to ng fetch() call sa PHP API
+ * TODO: In production, palitan to ng fetch() call sa .NET API
  * Para galing sa database yung data instead of localStorage
  */
 function loadSavedSchedule() {
@@ -636,7 +636,7 @@ function loadSavedSchedule() {
  * Save button click handler - Stores schedule to localStorage
  * Shows visual feedback (button changes to "Saved!")
  * 
- * TODO: In production, gawing AJAX POST request to PHP backend
+ * TODO: In production, gawing AJAX POST request to .NET API
  * Para ma-save sa database instead of localStorage
  */
 document.getElementById('saveScheduleBtn')?.addEventListener('click', function() {
@@ -651,7 +651,7 @@ document.getElementById('saveScheduleBtn')?.addEventListener('click', function()
     };
     
     // Save to localStorage (demo mode)
-    // TODO: fetch('/api/saveSchedule', { method: 'POST', body: JSON.stringify(dataToSave) })
+    // TODO: apiCall('/teacher/schedule', { method: 'POST', body: JSON.stringify(dataToSave) })
     localStorage.setItem('teacherSchedule', JSON.stringify(dataToSave));
     
     // ============================================
@@ -672,7 +672,4 @@ document.getElementById('saveScheduleBtn')?.addEventListener('click', function()
         btn.classList.remove('btn-success');
         btn.classList.add('btn-primary');
     }, 2000);
-    
-    // Debug log para makita sa console kung na-save ba
-    console.log('Schedule saved:', dataToSave);
 });
