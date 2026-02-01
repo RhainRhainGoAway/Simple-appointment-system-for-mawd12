@@ -2,7 +2,7 @@
 // API Configuration
 // ============================================
 // Change this URL based on your environment
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:5001/api';
 
 // ============================================
 // API Helper Function for Authenticated Requests

@@ -11,7 +11,7 @@
  */
 
 // API Configuration
-const PROFILE_API_BASE = 'http://localhost:5000/api';
+const PROFILE_API_BASE = 'http://localhost:5001/api';
 
 // ============================================
 // LOAD PROFILE DATA

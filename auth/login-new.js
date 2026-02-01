@@ -1,5 +1,5 @@
 // API Configuration - Docker API URL
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:5001/api';
 
 // Store sections data
 let sectionsData = [];
