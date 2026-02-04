@@ -27,6 +27,13 @@ namespace AppointmentSystemAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
+            // Validate email domain - only allow @santarosa.sti.edu.ph
+            const string allowedDomain = "@santarosa.sti.edu.ph";
+            if (string.IsNullOrEmpty(model.Email) || !model.Email.ToLower().EndsWith(allowedDomain))
+            {
+                return BadRequest(new { message = "Only @santarosa.sti.edu.ph email addresses are allowed." });
+            }
+
             // Check if email already exists
             if (await _context.Students.AnyAsync(s => s.Email == model.Email))
             {

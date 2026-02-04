@@ -90,6 +90,15 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     errorDiv.textContent = '';
     errorDiv.style.display = 'none';
     
+    // Validate email domain - only allow @santarosa.sti.edu.ph
+    const email = form.email.value.trim();
+    const allowedDomain = '@santarosa.sti.edu.ph';
+    if (!email.toLowerCase().endsWith(allowedDomain)) {
+        errorDiv.textContent = 'Only @santarosa.sti.edu.ph email addresses are allowed.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
     // Validate student number if student role is selected
     const role = form.role.value;
     const studentNumber = form.studentNumber ? form.studentNumber.value : '';
@@ -211,3 +220,5 @@ function showForm(formId) {
         el.style.display = 'none';
     });
 }
+
+

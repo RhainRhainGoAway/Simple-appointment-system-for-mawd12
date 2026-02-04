@@ -1,7 +1,3 @@
-// ============================================
-// API Configuration
-// ============================================
-// Change this URL based on your environment
 const API_BASE = 'http://localhost:5001/api';
 
 // ============================================

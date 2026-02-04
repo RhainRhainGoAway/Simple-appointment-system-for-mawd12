@@ -1,25 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "D:\\xampp\\htdocs\\appointment_system\\api\\AppointmentSystemAPI.csproj": {}
+    "/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/AppointmentSystemAPI.csproj": {}
   },
   "projects": {
-    "D:\\xampp\\htdocs\\appointment_system\\api\\AppointmentSystemAPI.csproj": {
+    "/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/AppointmentSystemAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\xampp\\htdocs\\appointment_system\\api\\AppointmentSystemAPI.csproj",
+        "projectUniqueName": "/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/AppointmentSystemAPI.csproj",
         "projectName": "AppointmentSystemAPI",
-        "projectPath": "D:\\xampp\\htdocs\\appointment_system\\api\\AppointmentSystemAPI.csproj",
-        "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "D:\\xampp\\htdocs\\appointment_system\\api\\obj\\",
+        "projectPath": "/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/AppointmentSystemAPI.csproj",
+        "packagesPath": "/Users/rhain/.nuget/packages/",
+        "outputPath": "/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/rhain/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -38,7 +39,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -76,6 +77,20 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.osx-arm64",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -84,7 +99,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
