@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AppointmentSystemAPI.Models
 {
-    [Table("students")]  // Match your existing MySQL table name
-    public class Student
+    [Table("users")]  // Renamed from "students" to "users"
+    public class User
     {
         [Key]
         [Column("id")]

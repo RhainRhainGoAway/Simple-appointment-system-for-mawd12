@@ -226,9 +226,11 @@
 }
 
 /* Modal Styles */
-.modal-content {
+#specificHoursModal .modal-content {
     border-radius: 16px;
     border: none;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .modal-header {
@@ -329,6 +331,16 @@
 
 .calendar-day.weekend {
     color: #ef4444;
+}
+
+.calendar-day.disabled {
+    color: #d1d5db;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.calendar-day.disabled:hover {
+    background: transparent;
 }
 
 /* Specific Time Section in Modal */

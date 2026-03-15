@@ -1,42 +1,15 @@
-/*
- * DASHBOARD.JS - Student Dashboard JavaScript
- * Ito yung JS file para sa student dashboard page
- * 
- * Main features:
- * 1. Profile Menu Toggle - Para i-show/hide yung profile dropdown
- * 2. Right Sidebar Toggle - Para sa mobile responsive na sidebar
- * 
- * Note: Shared functionality to ng teacher at student dashboard
- */
-
 // ============================================
 // PROFILE MENU FUNCTIONALITY
 // ============================================
 
-/**
- * toggleProfileMenu() - Para i-toggle yung visibility ng profile dropdown menu
- * Kapag clinick yung profile icon, mag-sshow or mag-hhide yung menu
- * Ginagamit yung classList.toggle() para mag-add/remove ng 'show' class
- */
 function toggleProfileMenu() {
     const menu = document.getElementById('profileMenu');
-    // toggle() - kung wala pang 'show' class, i-add; kung meron na, i-remove
     menu.classList.toggle('show');
 }
 
-/**
- * Event listener para i-close yung profile menu pag nag-click sa labas
- * Importante to para hindi stuck yung menu na open
- * 
- * Logic: Check kung yung click ay nasa loob ba ng dropdown area o hindi
- * Kung nasa labas, tanggalin yung 'show' class para mag-close yung menu
- */
 document.addEventListener('click', function(e) {
     const dropdown = document.querySelector('.profile-dropdown');
     const menu = document.getElementById('profileMenu');
-    
-    // contains() - checks kung yung clicked element ay nasa loob ng dropdown
-    // Kung HINDI nasa loob, ibig sabihin sa labas siya nag-click, so close the menu
     if (dropdown && !dropdown.contains(e.target)) {
         menu.classList.remove('show');
     }
@@ -46,35 +19,131 @@ document.addEventListener('click', function(e) {
 // RIGHT SIDEBAR FUNCTIONALITY (MOBILE)
 // ============================================
 
-/**
- * toggleRightSidebar() - Para i-toggle yung right sidebar sa mobile view
- * Sa mobile kasi, naka-hide by default yung right sidebar
- * Kailangan may button para i-show siya
- */
 function toggleRightSidebar() {
     const rightSidebar = document.getElementById('rightSidebar');
     rightSidebar.classList.toggle('open');
 }
 
-/**
- * Event listener para i-close yung right sidebar pag nag-click sa labas
- * Only active kapag mobile view (screen width <= 992px)
- * 
- * Chinecheck natin kung:
- * 1. Mobile ba yung screen size (992px or less)
- * 2. Ang click ba ay nasa labas ng sidebar AND toggle button
- * Kung oo sa dalawa, close yung sidebar
- */
 document.addEventListener('click', function(e) {
     const rightSidebar = document.getElementById('rightSidebar');
     const toggleBtn = document.querySelector('.right-sidebar-toggle');
-    
-    // window.innerWidth - kukunin yung width ng browser window
-    // 992px is yung breakpoint natin for tablet/mobile
     if (window.innerWidth <= 992) {
-        // Check kung may sidebar at toggle button, at kung ang click ay nasa labas ng dalawa
         if (rightSidebar && toggleBtn && !rightSidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
             rightSidebar.classList.remove('open');
         }
     }
 });
+
+// ============================================
+// DASHBOARD DATA LOADING
+// ============================================
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set welcome name
+    const userName = localStorage.getItem('userName');
+    if (userName) {
+        const firstName = userName.split(' ')[0];
+        document.getElementById('welcomeName').textContent = firstName;
+    }
+
+    loadStats();
+
+    // Keep the right sidebar non-scrollable by:
+    // - showing max 3 teachers
+    // - reducing history rows based on how many teachers are shown
+    (async () => {
+        const teacherCount = await loadTeachers();
+        await loadHistory(teacherCount);
+    })();
+});
+
+async function loadStats() {
+    try {
+        const response = await apiCall('/appointments/student/stats');
+        if (response && response.ok) {
+            const data = await response.json();
+            document.getElementById('pending-count').textContent = data.pending;
+            document.getElementById('approved-count').textContent = data.accepted;
+            document.getElementById('cancelled-count').textContent = data.cancelled;
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+async function loadTeachers() {
+    try {
+        const response = await apiCall('/schedules/teachers');
+        if (response && response.ok) {
+            const teachers = await response.json();
+            const container = document.getElementById('teacherList');
+            if (teachers.length === 0) {
+                container.innerHTML = '<p class="text-muted small">No teachers available</p>';
+                return 0;
+            }
+
+            const shownTeachers = teachers.slice(0, 3);
+            container.innerHTML = shownTeachers.map(t => `
+                <div class="teacher-item">
+                    <div class="teacher-info">
+                        <img src="${t.profilePicture || '/appointment_system/assets/default-avatar.png'}" alt="Teacher">
+                        <span>${escapeHtml(t.name)}</span>
+                    </div>
+                    <button class="request-btn" onclick="window.location.href='/appointment_system/pages/book-schedule/book-schedule.html'">Request</button>
+                </div>
+            `).join('');
+
+            return shownTeachers.length;
+        }
+    } catch (error) {
+        console.error('Error loading teachers:', error);
+    }
+
+    return 0;
+}
+
+function getHistoryRowLimit(teacherCount) {
+    if (teacherCount === 1) return 9;
+    if (teacherCount === 2) return 8;
+    if (teacherCount >= 3) return 7;
+    return 9;
+}
+
+async function loadHistory(teacherCount = 0) {
+    try {
+        const response = await apiCall('/appointments/student/history');
+        if (response && response.ok) {
+            const history = await response.json();
+            const tbody = document.getElementById('historyTableBody');
+            if (history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-muted small">No consultation history yet</td></tr>';
+                return;
+            }
+
+            const maxRows = getHistoryRowLimit(teacherCount);
+            const rows = history.slice(0, maxRows);
+
+            tbody.innerHTML = rows.map(h => `
+                <tr>
+                    <td>
+                        <div class="history-item">
+                            <img src="${h.teacherProfilePicture || '/appointment_system/assets/default-avatar.png'}" alt="">
+                            <span>${escapeHtml(h.teacherName)}</span>
+                        </div>
+                    </td>
+                    <td>${escapeHtml(h.appointmentDate)}</td>
+                    <td>${escapeHtml(h.startTime)} - ${escapeHtml(h.endTime)}</td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}

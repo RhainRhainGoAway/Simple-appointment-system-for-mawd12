@@ -54,6 +54,30 @@
     color: #6b7280;
 }
 
+/* Location Select */
+.location-select {
+    display: flex;
+    gap: 12px;
+}
+
+.location-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 2px solid #3b82f6;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #1e40af;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: default;
+}
+
+.location-option i {
+    font-size: 18px;
+}
+
 /* Reason Grid */
 .reason-grid {
     display: flex;
@@ -93,7 +117,31 @@
 
 /* Modal Customization */
 #bookingModal .modal-content {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border-radius: 16px !important;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+#bookingErrorModal .modal-content {
+    border-radius: 16px !important;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+#bookingModal .modal-header {
+    padding: 20px 24px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+#bookingModal .modal-body {
+    padding: 20px 24px 24px !important;
+}
+
+#bookingModal .modal-footer {
+    padding: 0 24px 24px !important;
+    border-top: none !important;
 }
 
 #bookingModal .form-control {
@@ -123,4 +171,14 @@
 
 #bookingModal .dropdown-item:hover {
     background: #f1f5f9;
+}
+
+/* When the error popup is open, visually dim the booking modal behind it */
+#bookingModal.booking-dimmed {
+    pointer-events: none;
+}
+
+#bookingModal.booking-dimmed .modal-content {
+    filter: brightness(0.65);
+    transition: filter 0.15s ease;
 }

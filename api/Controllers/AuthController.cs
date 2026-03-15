@@ -35,13 +35,13 @@ namespace AppointmentSystemAPI.Controllers
             }
 
             // Check if email already exists
-            if (await _context.Students.AnyAsync(s => s.Email == model.Email))
+            if (await _context.Users.AnyAsync(s => s.Email == model.Email))
             {
                 return BadRequest(new { message = "Email is already registered!" });
             }
 
-            // Create new student with hashed password
-            var student = new Student
+            // Create new user with hashed password
+            var user = new AppUser
             {
                 Name = model.Name,
                 Email = model.Email,
@@ -51,7 +51,7 @@ namespace AppointmentSystemAPI.Controllers
                 SectionId = model.Role == "student" ? model.SectionId : null
             };
 
-            _context.Students.Add(student);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Registration successful!" });
@@ -62,7 +62,7 @@ namespace AppointmentSystemAPI.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             // Find user by email
-            var user = await _context.Students
+            var user = await _context.Users
                 .FirstOrDefaultAsync(s => s.Email == model.Email);
 
             // Verify password
@@ -99,7 +99,7 @@ namespace AppointmentSystemAPI.Controllers
             if (string.IsNullOrEmpty(userIdClaim))
                 return Unauthorized(new { message = "Not authenticated" });
 
-            var user = await _context.Students.FindAsync(int.Parse(userIdClaim));
+            var user = await _context.Users.FindAsync(int.Parse(userIdClaim));
 
             if (user == null)
                 return NotFound(new { message = "User not found" });
@@ -124,7 +124,7 @@ namespace AppointmentSystemAPI.Controllers
             if (string.IsNullOrEmpty(userIdClaim))
                 return Unauthorized(new { message = "Not authenticated" });
 
-            var user = await _context.Students.FindAsync(int.Parse(userIdClaim));
+            var user = await _context.Users.FindAsync(int.Parse(userIdClaim));
 
             if (user == null)
                 return NotFound(new { message = "User not found" });
@@ -136,7 +136,7 @@ namespace AppointmentSystemAPI.Controllers
             return Ok(new { message = "Profile picture updated successfully!", profilePicture = user.ProfilePicture });
         }
 
-        private string GenerateJwtToken(Student user)
+        private string GenerateJwtToken(AppUser user)
         {
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));

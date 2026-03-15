@@ -211,7 +211,7 @@
     height: 100vh;
     background: #f8f9fa;
     padding: 24px 12px;
-    overflow-y: auto;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -530,6 +530,73 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     z-index: 10 !important;
 }
+
+/* Class schedules (subject-event) - static Figma-like card */
+.fc-event.subject-event {
+    background-color: #e5e7eb !important;
+    border: 2px solid #6b7280 !important;
+    border-radius: 14px !important;
+    box-sizing: border-box !important;
+    cursor: default !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    transition: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.fc-event.subject-event:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    z-index: auto !important;
+}
+
+.fc-event.subject-event .fc-event-main,
+.fc-event.subject-event .subject-card {
+    padding: 6px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: 2px;
+    height: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.fc-event.subject-event .fc-event-title,
+.fc-event.subject-event .subject-card__title {
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    line-height: 1.2;
+    color: #000000 !important;
+    text-decoration: none !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.fc-event.subject-event .fc-event-time,
+.fc-event.subject-event .subject-card__time {
+    margin-top: 2px;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    color: rgba(0,0,0,0.75) !important;
+    white-space: nowrap !important;
+}
 .fc-event-main {
     padding: 1px 2px;
     display: flex;
@@ -556,6 +623,100 @@
 }
 .fc-timegrid-event-harness {
     overflow: visible !important;
+}
+
+/* When hovering an event, ensure its harness comes to the top (stacked-paper feel) */
+.fc-timegrid-event-harness:has(.fc-event:hover:not(.subject-event)) {
+    z-index: 50 !important;
+}
+
+/* Consultation card layout (matches My Schedule) */
+.fc-event.consultation-event {
+    background-color: #d7ecfb !important;
+    border: 2px solid #1d8fe1 !important;
+    border-radius: 14px !important;
+    box-sizing: border-box !important;
+}
+
+.fc-event.pending-event {
+    background-color: #fed7aa !important;
+    border: 2px solid #fb923c !important;
+    border-radius: 14px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+}
+
+.fc-timegrid-event.consultation-event {
+    min-height: 54px !important;
+}
+
+.fc-timegrid-event.pending-event {
+    min-height: 54px !important;
+}
+
+.fc-event.consultation-event .fc-event-main,
+.fc-event.pending-event .fc-event-main {
+    padding: 6px 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+}
+
+.consultation-card {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 8px;
+    align-items: center;
+    height: 100%;
+}
+
+.consultation-card__avatar {
+    width: 28px;
+    height: 28px;
+    max-width: 28px;
+    max-height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    flex: 0 0 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.08);
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    color: #1a1a2e;
+}
+
+img.consultation-card__avatar {
+    display: block;
+}
+
+.consultation-card__content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.2;
+}
+
+.consultation-card__name {
+    font-weight: 700;
+    font-size: 12px;
+    color: #000000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.consultation-card__time {
+    margin-top: 2px;
+    font-weight: 600;
+    font-size: 11px;
+    color: rgba(0,0,0,0.75);
+    white-space: nowrap;
 }
 
 /* Month View Events - Show only title, hide time */

@@ -14,7 +14,7 @@
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <!--box icons-->
-    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css?v=2' rel='stylesheet'>
 </head>
 <body>
     <!-- Sidebar Container -->
@@ -100,18 +100,6 @@
                                     <div class="time-slots"></div>
                                 </div>
                             </div>
-
-                            <!-- Saturday -->
-                            <div class="day-row" data-day="sat">
-                                <div class="day-toggle">
-                                    <input type="checkbox" class="form-check-input day-checkbox" id="satCheck">
-                                    <label class="day-label" for="satCheck">Sat</label>
-                                </div>
-                                <div class="time-slots-container">
-                                    <div class="unavailable-text">Unavailable</div>
-                                    <div class="time-slots"></div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -188,6 +176,7 @@
         </div>
     </div>
 
+    <script src="/appointment_system/shared/js/api.js"></script>
     <script src="/appointment_system/shared/js/load-sidebar-teacher.js"></script>
     <script src="./edit-schedule.js"></script>
 

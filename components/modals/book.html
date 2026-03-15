@@ -66,15 +66,45 @@
                     </div>
                 </div>
 
+                <!-- Location -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Location</label>
+                    <div class="location-select">
+                        <div class="location-option selected">
+                            <i class='bx bx-buildings'></i>
+                            <span>Faculty</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Notes -->
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Notes:</label>
-                    <input type="text" class="form-control" id="bookingNotes" placeholder="Aa">
+                    <label class="form-label fw-semibold">Notes: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="bookingNotes" placeholder="Describe your concern or question (required)">
+                    <div class="text-danger small mt-1" id="notesError" style="display:none">Please enter a note before confirming.</div>
                 </div>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-primary px-4 rounded-pill" onclick="confirmBooking()">Confirm</button>
                 <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Error Modal -->
+<div class="modal fade" id="bookingErrorModal" tabindex="-1" aria-labelledby="bookingErrorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="bookingErrorModalLabel">Unable to book</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <p class="text-muted mb-0" id="bookingErrorMessage">You cannot book when you have a class at that time.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-primary px-4 rounded-pill" data-bs-dismiss="modal">OK</button>
             </div>
         </div>
     </div>

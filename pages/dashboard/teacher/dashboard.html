@@ -15,7 +15,7 @@
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <!--box icons para sa mga icons na gagamitin-->
-    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css?v=2' rel='stylesheet'>
 
     <!--FullCalendar CSS-->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet'>
@@ -60,21 +60,8 @@
             <!-- Pending Student Requests -->
             <div class="sidebar-card available-teachers">
                 <h6>Pending student requests:</h6>
-                <div class="teacher-list">
-                    <div class="teacher-item">
-                        <div class="teacher-info">
-                            <img src="../../../assets/Malvar, Rhain B..jpg" alt="Student">
-                            <span>Malvar, Rhain B.</span>
-                        </div>
-                        <button class="request-btn">View</button>
-                    </div>
-                    <div class="teacher-item">
-                        <div class="teacher-info">
-                            <img src="../../../assets/Malvar, Rhain B..jpg" alt="Student">
-                            <span>Juan Dela Cruz</span>
-                        </div>
-                        <button class="request-btn">View</button>
-                    </div>
+                <div class="teacher-list" id="pendingStudentsList">
+                    <p class="text-muted small">Loading...</p>
                 </div>
             </div>
 
@@ -89,27 +76,8 @@
                             <th>Duration</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="history-item">
-                                    <img src="../../../assets/Malvar, Rhain B..jpg" alt="">
-                                    <span>Malvar, Rhain B.</span>
-                                </div>
-                            </td>
-                            <td>June 23, 2025</td>
-                            <td>10:20 - 10:40</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="history-item">
-                                    <img src="../../../assets/Malvar, Rhain B..jpg" alt="">
-                                    <span>Juan Dela Cruz</span>
-                                </div>
-                            </td>
-                            <td>June 22, 2025</td>
-                            <td>11:30 - 10:40</td>
-                        </tr>
+                    <tbody id="historyTableBody">
+                        <tr><td colspan="3" class="text-muted small">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -120,7 +88,7 @@
             <div class="container-fluid py-4">
                 <!-- Welcome Section -->
                 <div class="mb-4">
-                    <h2 class="fw-bold">Welcome back, <span class="text-primary">Teacher</span></h2>
+                    <h2 class="fw-bold">Welcome back, <span class="text-primary" id="welcomeName">Teacher</span></h2>
                     <p class="text-muted">Review pending consultation requests from students.</p>
                 </div>
 
@@ -133,7 +101,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 class="card-subtitle text-muted fw-semibold">Pending Requests</h6>
                                 </div>
-                                <h2 class="card-title fw-bold mb-0" id="pending-count">8</h2>
+                                <h2 class="card-title fw-bold mb-0" id="pending-count">0</h2>
                             </div>
                         </div>
                     </div>
@@ -145,7 +113,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 class="card-subtitle text-muted fw-semibold">Approved schedules</h6>
                                 </div>
-                                <h2 class="card-title fw-bold mb-0" id="approved-count">35</h2>
+                                <h2 class="card-title fw-bold mb-0" id="approved-count">0</h2>
                             </div>
                         </div>
                     </div>
@@ -157,7 +125,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 class="card-subtitle text-muted fw-semibold">Cancelled schedules</h6>
                                 </div>
-                                <h2 class="card-title fw-bold mb-0" id="cancelled-count">3</h2>
+                                <h2 class="card-title fw-bold mb-0" id="cancelled-count">0</h2>
                             </div>
                         </div>
                     </div>

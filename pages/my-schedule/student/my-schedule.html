@@ -14,7 +14,7 @@
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <!--box icons para sa mga icons na gagamitin-->
-    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css?v=2' rel='stylesheet'>
 
     <!--FullCalendar CSS-->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet'>
@@ -27,21 +27,68 @@
     <section class="home">
         <!-- Page Header -->
         <div class="page-header">
-            <h2>My Schedule</h2>
-            <p>View your class schedule and upcoming consultations</p>
-        </div>
+            <div class="page-header__text">
+                <h2>My Schedule</h2>
+                <p>View your class schedule and upcoming consultations</p>
+            </div>
 
-        <!-- Month Selector -->
-        <div class="month-selector">
-            <i class='bx bx-calendar'></i>
-            <span id="currentMonth">September 2025</span>
-            <i class='bx bx-chevron-down'></i>
+            <!-- Month Selector -->
+            <div class="month-selector">
+                <i class='bx bx-calendar'></i>
+                <span id="currentMonth">September 2025</span>
+                <i class='bx bx-chevron-down'></i>
+            </div>
         </div>
 
         <!-- Full Calendar -->
         <div id="schedule-calendar"></div>
+
+        <!-- Consultation Detail Modal -->
+        <div class="modal fade" id="consultationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content consultation-modal">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Consultation Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="detail-row">
+                            <i class='bx bx-user'></i>
+                            <span class="detail-label">Teacher</span>
+                            <span class="detail-value" id="modalPersonName"></span>
+                        </div>
+                        <div class="detail-row">
+                            <i class='bx bx-calendar'></i>
+                            <span class="detail-label">Date</span>
+                            <span class="detail-value" id="modalDate"></span>
+                        </div>
+                        <div class="detail-row">
+                            <i class='bx bx-time'></i>
+                            <span class="detail-label">Time</span>
+                            <span class="detail-value" id="modalTime"></span>
+                        </div>
+                        <div class="detail-row">
+                            <i class='bx bx-map'></i>
+                            <span class="detail-label">Location</span>
+                            <span class="detail-value" id="modalLocation"></span>
+                        </div>
+                        <div class="detail-row">
+                            <i class='bx bx-notepad'></i>
+                            <span class="detail-label">Reason</span>
+                            <span class="detail-value" id="modalReason"></span>
+                        </div>
+                        <div class="detail-row">
+                            <i class='bx bx-message-detail'></i>
+                            <span class="detail-label">Notes</span>
+                            <span class="detail-value" id="modalNotes"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
+    <script src="/appointment_system/shared/js/api.js"></script>
     <script src="/appointment_system/shared/js/load-sidebar-student.js"></script>
 
     <!--Bootstrap 5 JS-->
@@ -51,10 +98,7 @@
     <!--FullCalendar JS-->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
 
-    <!--Calendar JS (centralized calendar data & initialization)-->
-    <script src="../../../shared/js/calendar.js"></script>
-
     <!--My Schedule JS-->
-    <script src="./my-schedule.js"></script>
+    <script src="/appointment_system/pages/my-schedule/student/my-schedule.js"></script>
 </body>
 </html>

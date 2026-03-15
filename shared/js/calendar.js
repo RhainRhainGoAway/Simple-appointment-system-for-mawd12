@@ -1,424 +1,259 @@
-/*
- * CALENDAR.JS - Centralized Calendar Data & Configuration
- * Ito yung shared JS file para sa lahat ng calendar-related functionality
- * 
- * Bakit centralized?
- * - Para isang lugar lang yung source of truth ng schedule data
- * - Hindi na kailangan i-duplicate yung events sa iba't ibang files
- * - Mas madali mag-maintain at mag-update
- * 
- * Main features:
- * 1. Subject Events Data - Mga classes/subjects
- * 2. Consultation Events Data - Mga booked consultations
- * 3. Calendar Configurations - Shared settings for FullCalendar
- * 4. Helper Functions - Utility functions for calendar operations
- * 
- * Dependencies: FullCalendar JS library
- * 
- * Note: Currently hardcoded yung data (demo mode)
- * TODO: Replace with fetch() calls to .NET API
- */
-
 // ============================================
-// CENTRALIZED SCHEDULE DATA
+// CALENDAR.JS - Dashboard Calendar (fetches from API)
 // ============================================
 
-/*
- * Subject Events Array - Ito yung lahat ng classes/subjects
- * Each event object contains:
- * - title: Name ng subject
- * - start/end: Date at time ng class (ISO 8601 format)
- * - type: 'subject' para ma-identify kung anong klaseng event
- * - classNames: CSS class para sa styling
- * - backgroundColor/textColor/borderColor: Visual styling
- * 
- * TODO: In production, ito dapat galing sa database through .NET API
- */
-const subjectEvents = [
-    // ===== MONDAY (Sept 22) =====
-    {
-        title: 'Filipino sa Piling Larang',
-        start: '2025-09-22T08:00:00',
-        end: '2025-09-22T09:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',     // Light gray para sa subjects
-        textColor: '#374151',           // Dark gray text
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Practical Research 2',
-        start: '2025-09-22T10:00:00',
-        end: '2025-09-22T11:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Personal Development',
-        start: '2025-09-22T12:30:00',
-        end: '2025-09-22T14:00:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Pagbasa at Pagsusuri ng Iba\'t Ibang Teksto Tungo sa Pananaliksik',
-        start: '2025-09-22T14:00:00',
-        end: '2025-09-22T15:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
+const dayMap = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5 };
 
-    // ===== TUESDAY (Sept 23) =====
-    {
-        title: 'Filipino sa Piling Larang',
-        start: '2025-09-23T08:00:00',
-        end: '2025-09-23T09:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Practical Research 2',
-        start: '2025-09-23T10:00:00',
-        end: '2025-09-23T11:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Personal Development',
-        start: '2025-09-23T12:30:00',
-        end: '2025-09-23T14:00:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Pagbasa at Pagsusuri ng Iba\'t Ibang Teksto Tungo sa Pananaliksik',
-        start: '2025-09-23T14:00:00',
-        end: '2025-09-23T15:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Computer Programming 4',
-        start: '2025-09-23T16:00:00',
-        end: '2025-09-23T17:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-
-    // ===== WEDNESDAY (Sept 24) =====
-    {
-        title: 'Physical Science',
-        start: '2025-09-24T08:00:00',
-        end: '2025-09-24T09:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Physical Education',
-        start: '2025-09-24T10:00:00',
-        end: '2025-09-24T12:00:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'English for Academic and Professional Purposes',
-        start: '2025-09-24T13:00:00',
-        end: '2025-09-24T16:00:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-
-    // ===== THURSDAY (Sept 25) =====
-    {
-        title: 'Physical Science',
-        start: '2025-09-25T08:00:00',
-        end: '2025-09-25T09:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Computer Programming 4',
-        start: '2025-09-25T10:00:00',
-        end: '2025-09-25T11:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Computer Programming 4',
-        start: '2025-09-25T12:30:00',
-        end: '2025-09-25T14:00:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    },
-    {
-        title: 'Computer Programming 5',
-        start: '2025-09-25T14:00:00',
-        end: '2025-09-25T15:30:00',
-        type: 'subject',
-        classNames: ['subject-event'],
-        backgroundColor: '#f8f9fa',
-        textColor: '#374151',
-        borderColor: '#d1d5db'
-    }
-];
-
-/*
- * Consultation Events Array - Ito yung mga booked consultations
- * Yellow color para madaling makita na iba sila sa regular classes
- * 
- * TODO: Ito dapat dynamic galing sa bookings table sa database
- */
-const consultationEvents = [
-    {
-        title: 'Ms. Kim Minju',
-        start: '2025-09-22T09:30:00',
-        end: '2025-09-22T09:50:00',
-        type: 'consultation',
-        classNames: ['consultation-event'],
-        backgroundColor: '#facc15',     // Yellow para stand out
-        textColor: '#1a1a2e',
-        borderColor: '#facc15'
-    },
-    {
-        title: 'Ms. Jang Wonyoung',
-        start: '2025-09-22T11:40:00',
-        end: '2025-09-22T11:50:00',
-        type: 'consultation',
-        classNames: ['consultation-event'],
-        backgroundColor: '#facc15',
-        textColor: '#1a1a2e',
-        borderColor: '#facc15'
-    },
-    {
-        title: 'Ms. Jo Yuri',
-        start: '2025-09-23T09:30:00',
-        end: '2025-09-23T09:50:00',
-        type: 'consultation',
-        classNames: ['consultation-event'],
-        backgroundColor: '#facc15',
-        textColor: '#1a1a2e',
-        borderColor: '#facc15'
-    },
-    {
-        title: 'Ms. An Yujin',
-        start: '2025-09-24T12:40:00',
-        end: '2025-09-24T12:50:00',
-        type: 'consultation',
-        classNames: ['consultation-event'],
-        backgroundColor: '#facc15',
-        textColor: '#1a1a2e',
-        borderColor: '#facc15'
-    }
-];
-
-// Combine all events using spread operator
-// Ginagamit to kapag need i-display lahat sa My Schedule page
-const allEvents = [...subjectEvents, ...consultationEvents];
-
-function getConsultationEvents() {
-    return consultationEvents;
+function getAppBasePath() {
+    // Works when hosted at http://localhost/appointment_system/... (XAMPP)
+    // and when hosted at domain root (e.g. /pages/...).
+    const p = window.location.pathname || '';
+    return p.includes('/appointment_system/') ? '/appointment_system' : '';
 }
 
-function getAllEvents() {
-    return allEvents;
-}
-
-/**
- * formatTime() - Format date object to readable time string
- * Helper function para consistent yung time display
- * 
- * @param date - JavaScript Date object
- * @returns string - Formatted time like "10:30 AM"
- */
-function formatTime(date) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-// ============================================
-// CALENDAR CONFIGURATIONS
-// ============================================
-
-/*
- * Shared settings para sa lahat ng calendars
- * Para hindi na paulit-ulit i-define yung same settings
- * object spread (...) para ma-inherit ng specific configs
- */
-const baseCalendarConfig = {
-    initialDate: '2025-09-22',       // Starting date ng calendar
-    slotMinTime: '07:00:00',         // Start time (7 AM)
-    slotMaxTime: '18:00:00',         // End time (6 PM)
-    weekends: false,                  // Hide weekends
-    allDaySlot: false,               // No all-day row
-    height: 'auto'                   // Auto height
-};
-
-/*
- * Dashboard Calendar Config - Para sa dashboard widget
- * Simplified view na consultations lang ang i-display
- */
-const dashboardCalendarConfig = {
-    ...baseCalendarConfig,           // Inherit base settings
-    initialView: 'timeGridWeek',
-    headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    },
-    slotDuration: '00:30:00',        // 30-minute slots
-    slotLabelInterval: '01:00',
-    eventDisplay: 'block',
-    eventMinHeight: 20,
-    events: getConsultationEvents(),  // Consultations lang
-    
-    // Click handler - redirect to My Schedule page
-    eventClick: function(info) {
-        window.location.href = '/html/my-schedule.html';
-    }
-};
-
-/*
- * My Schedule Calendar Config - Full schedule view
- * Shows both subjects and consultations
- */
-const myScheduleCalendarConfig = {
-    ...baseCalendarConfig,           // Inherit base settings
-    initialView: 'timeGridWeek',
-    headerToolbar: {
-        left: 'prev',
-        center: 'title',
-        right: 'next'
-    },
-    titleFormat: { weekday: 'short', day: 'numeric' },
-    dayHeaderFormat: { weekday: 'short', day: 'numeric' },
-    contentHeight: 700,
-    slotDuration: '01:00:00',        // 1-hour slots
-    slotLabelInterval: '01:00',
-    slotLabelFormat: {
-        hour: 'numeric',
-        minute: '2-digit',
-        meridiem: 'short'
-    },
-    eventTimeFormat: {
-        hour: 'numeric',
-        minute: '2-digit',
-        meridiem: 'short'
-    },
-    events: getAllEvents(),           // All events (subjects + consultations)
-    
-    // Click handler for consultation events
-    eventClick: function(info) {
-        if (info.event.extendedProps.type === 'consultation') {
-            alert('Consultation with: ' + info.event.title + '\n' + 
-                'Time: ' + formatTime(info.event.start) + ' - ' + formatTime(info.event.end));
-        }
-    },
-    
-    // Handler kapag nagbago yung visible dates
-    datesSet: function(dateInfo) {
-        // Update month selector text
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-        const date = dateInfo.view.currentStart;
-        const monthEl = document.getElementById('currentMonth');
-        if (monthEl) {
-            monthEl.textContent = months[date.getMonth()] + ' ' + date.getFullYear();
-        }
-    }
-};
-
-
-
-// Initialize appropriate calendar based sa page
-document.addEventListener('DOMContentLoaded', function() {
-    // Check kung may element na id="calendar"
+document.addEventListener('DOMContentLoaded', async function() {
     const dashboardCalendarEl = document.getElementById('calendar');
-    if (dashboardCalendarEl) {
-        const dashboardCalendar = new FullCalendar.Calendar(dashboardCalendarEl, dashboardCalendarConfig);
-        dashboardCalendar.render();
-    }
+    if (!dashboardCalendarEl) return;
 
-    // Check kung may element na id="schedule-calendar"
-    const scheduleCalendarEl = document.getElementById('schedule-calendar');
-    if (scheduleCalendarEl) {
-        const scheduleCalendar = new FullCalendar.Calendar(scheduleCalendarEl, myScheduleCalendarConfig);
-        scheduleCalendar.render();
-    }
+    const role = localStorage.getItem('userRole');
+    const events = await loadDashboardEvents(role);
+
+    const initialDate = getInitialDateForRole(role);
+
+    const calendar = new FullCalendar.Calendar(dashboardCalendarEl, {
+        initialView: 'timeGridWeek',
+        initialDate: initialDate,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        firstDay: 1,
+        slotMinTime: '07:00:00',
+        slotMaxTime: '18:00:00',
+        weekends: false,
+        allDaySlot: false,
+        height: 'auto',
+        slotDuration: '00:30:00',
+        slotLabelInterval: '01:00',
+        eventDisplay: 'block',
+        eventMinHeight: 20,
+        eventOrder: 'start',
+        eventOrderStrict: true,
+        events: events,
+        eventContent: function(arg) {
+            // Only apply the custom layout in time-grid views.
+            if (!String(arg.view?.type || '').startsWith('timeGrid')) return true;
+
+            // Subject events: same DOM as My Schedule so CSS vertically centers time + title
+            if (arg.event.extendedProps.type === 'subject') {
+                const wrap = document.createElement('div');
+                // Use non-fc-* classnames to avoid nesting FullCalendar's own .fc-event-main
+                // which can cause the title text to be visually clipped.
+                wrap.className = 'subject-card';
+                const titleEl = document.createElement('div');
+                titleEl.className = 'subject-card__title';
+                titleEl.textContent = arg.event.title || '';
+                const timeEl = document.createElement('div');
+                timeEl.className = 'subject-card__time';
+                timeEl.textContent = arg.timeText || '';
+                wrap.appendChild(titleEl);
+                wrap.appendChild(timeEl);
+                return { domNodes: [wrap] };
+            }
+
+            if (arg.event.extendedProps.type !== 'consultation') return true;
+
+            const name = arg.event.extendedProps.personName || arg.event.title || '';
+            const time = arg.timeText || '';
+            const profilePicture = arg.event.extendedProps.personProfilePicture || '';
+
+            const wrap = document.createElement('div');
+            wrap.className = 'consultation-card';
+
+            const avatar = document.createElement(profilePicture ? 'img' : 'div');
+            avatar.className = 'consultation-card__avatar';
+            if (profilePicture) {
+                avatar.src = profilePicture;
+                avatar.alt = name;
+                avatar.loading = 'lazy';
+            } else {
+                avatar.textContent = (name || '?').trim().slice(0, 1).toUpperCase();
+            }
+
+            const content = document.createElement('div');
+            content.className = 'consultation-card__content';
+
+            const nameEl = document.createElement('div');
+            nameEl.className = 'consultation-card__name';
+            nameEl.textContent = name;
+
+            const timeEl = document.createElement('div');
+            timeEl.className = 'consultation-card__time';
+            timeEl.textContent = time;
+
+            content.appendChild(nameEl);
+            content.appendChild(timeEl);
+            wrap.appendChild(avatar);
+            wrap.appendChild(content);
+
+            return { domNodes: [wrap] };
+        },
+        eventDidMount: function(info) {
+            if (!String(info.view?.type || '').startsWith('timeGrid')) return;
+            if (info.event.extendedProps.type !== 'consultation') return;
+            if (!info.event.start) return;
+
+            const start = info.event.start;
+            const end = info.event.end || start;
+            const startMinutes = start.getHours() * 60 + start.getMinutes();
+            const endMinutes = end.getHours() * 60 + end.getMinutes();
+            const durationMinutes = Math.max(0, endMinutes - startMinutes);
+
+            const title = String(info.event.title || '');
+            let titleHash = 0;
+            for (let i = 0; i < title.length; i++) titleHash = (titleHash + title.charCodeAt(i)) % 50;
+
+            const z = 1000 + (startMinutes * 10) + Math.min(99, durationMinutes) + titleHash;
+
+            const harness = info.el.closest('.fc-timegrid-event-harness');
+
+            const setZ = (val) => {
+                if (harness) harness.style.setProperty('z-index', String(val), 'important');
+                info.el.style.setProperty('z-index', String(val), 'important');
+            };
+
+            // Base stacking (prevents overlap issues between bookings)
+            setZ(z);
+
+            // Hover stacking (must be above *all* others; CSS can't override inline !important)
+            info.el.addEventListener('mouseenter', () => setZ(999999));
+            info.el.addEventListener('mouseleave', () => setZ(z));
+        },
+        eventClick: function(info) {
+            // Keep class schedule blocks static.
+            if (info.event.extendedProps.type === 'subject') return;
+
+            const base = getAppBasePath();
+            const schedulePath = role === 'teacher'
+                ? `${base}/pages/my-schedule/teacher/my-schedule.html`
+                : `${base}/pages/my-schedule/student/my-schedule.html`;
+            window.location.href = schedulePath;
+        },
+        dateClick: function() {
+            const base = getAppBasePath();
+            const schedulePath = role === 'teacher'
+                ? `${base}/pages/my-schedule/teacher/my-schedule.html`
+                : `${base}/pages/my-schedule/student/my-schedule.html`;
+            window.location.href = schedulePath;
+        }
+    });
+
+    calendar.render();
 });
 
+async function loadDashboardEvents(role) {
+    const events = [];
 
-
-
-// Add bagong consultation event Para sa future implementation ng real-time updates
-function addConsultation(title, start, end) {
-    const newEvent = {
-        title: title,
-        start: start,
-        end: end,
-        type: 'consultation',
-        classNames: ['consultation-event'],
-        backgroundColor: '#facc15',
-        textColor: '#1a1a2e',
-        borderColor: '#facc15'
-    };
-    consultationEvents.push(newEvent);
-    return newEvent;
-}
-
-
-// Remove consultation event by index
-function removeConsultation(index) {
-    if (index >= 0 && index < consultationEvents.length) {
-        return consultationEvents.splice(index, 1);
+    // For students, load class schedules as recurring events
+    if (role === 'student') {
+        try {
+            const res = await apiCall('/schedules/student');
+                if (res && res.ok) {
+                const schedules = await res.json();
+                const baseDate = getMonday(new Date());
+                for (let weekOffset = -4; weekOffset <= 4; weekOffset++) {
+                    schedules.forEach(s => {
+                        const dayIndex = dayMap[s.dayOfWeek];
+                        if (dayIndex === undefined) return;
+                        const eventDate = new Date(baseDate);
+                        eventDate.setDate(eventDate.getDate() + (weekOffset * 7) + (dayIndex - 1));
+                        const dateStr = toLocalDateStr(eventDate);
+                        events.push({
+                            title: s.subjectName,
+                            start: `${dateStr}T${s.startTime}`,
+                            end: `${dateStr}T${s.endTime}`,
+                            classNames: ['subject-event'],
+                            backgroundColor: '#f8f9fa',
+                            textColor: '#374151',
+                            borderColor: '#d1d5db',
+                            extendedProps: { type: 'subject' }
+                        });
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Error loading class schedules:', e);
+        }
     }
-    return null;
+
+    // Load consultations based on role
+    const endpoint = role === 'teacher'
+        ? '/appointments/teacher/consultations'
+        : '/appointments/student/consultations';
+
+    try {
+        const res = await apiCall(endpoint);
+        if (res && res.ok) {
+            const consultations = await res.json();
+
+            consultations.forEach(c => {
+                if (role === 'teacher' && c.status && c.status !== 'accepted') return;
+                const isPending = c.status === 'pending';
+                const personName = isPending
+                    ? `${(c.personName || c.title || '').trim()} (Pending)`
+                    : (c.personName || c.title);
+                events.push({
+                    title: isPending ? `${c.title} (Pending)` : c.title,
+                    start: c.start,
+                    end: c.end,
+                    classNames: [isPending ? 'pending-event' : 'consultation-event'],
+                    backgroundColor: isPending ? '#fb923c' : '#facc15',
+                    textColor: '#1a1a2e',
+                    borderColor: isPending ? '#fb923c' : '#facc15',
+                    extendedProps: {
+                        type: 'consultation',
+                        status: c.status,
+                        personName: personName,
+                        personEmail: c.personEmail,
+                        personProfilePicture: c.personProfilePicture
+                    }
+                });
+            });
+        }
+    } catch (e) {
+        console.error('Error loading consultations:', e);
+    }
+
+    return events;
 }
 
+function getInitialDateForRole(role) {
+    const d = new Date();
+    const day = d.getDay();
 
-// Get total number of consultations para sa dashboard statistics
+    // For teachers, if it's weekend, jump to next Monday so the week view shows upcoming school days.
+    if (role === 'teacher') {
+        if (day === 6) d.setDate(d.getDate() + 2); // Sat -> Mon
+        if (day === 0) d.setDate(d.getDate() + 1); // Sun -> Mon
+    }
 
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
 
-function getConsultationCount() {
-    return consultationEvents.length;
+function toLocalDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
 }

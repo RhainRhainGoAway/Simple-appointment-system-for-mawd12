@@ -25,8 +25,7 @@ let scheduleState = {
         tue: { enabled: false, slots: [] },  // Tuesday schedule
         wed: { enabled: false, slots: [] },  // Wednesday schedule
         thu: { enabled: false, slots: [] },  // Thursday schedule
-        fri: { enabled: false, slots: [] },  // Friday schedule
-        sat: { enabled: false, slots: [] }   // Saturday schedule
+        fri: { enabled: false, slots: [] }   // Friday schedule
     },
     specificDates: []  // Array ng date-specific overrides
 };
@@ -383,6 +382,12 @@ function renderCalendar() {
         if (dayOfWeek === 0 || dayOfWeek === 6) {  // 0 = Sunday, 6 = Saturday
             dayDiv.classList.add('weekend');
         }
+
+        // Disable Saturdays (no selection)
+        const isSaturday = dayOfWeek === 6;
+        if (isSaturday) {
+            dayDiv.classList.add('disabled');
+        }
         
         // Mark selected date
         if (calendarState.selectedDate && 
@@ -390,11 +395,13 @@ function renderCalendar() {
             dayDiv.classList.add('selected');
         }
         
-        // Add click handler para sa date selection
-        dayDiv.addEventListener('click', () => {
-            calendarState.selectedDate = currentDate;
-            renderCalendar();  // Re-render para ma-update yung selected state
-        });
+        // Add click handler para sa date selection (skip disabled Saturdays)
+        if (!isSaturday) {
+            dayDiv.addEventListener('click', () => {
+                calendarState.selectedDate = currentDate;
+                renderCalendar();  // Re-render para ma-update yung selected state
+            });
+        }
         
         daysContainer.appendChild(dayDiv);
     }
@@ -467,6 +474,12 @@ function saveSpecificDate() {
     // Validation - must have selected date
     if (!calendarState.selectedDate) {
         alert('Please select a date');
+        return;
+    }
+
+    // Block Saturdays
+    if (calendarState.selectedDate.getDay() === 6) {
+        alert('Saturday is not available. Please choose another date.');
         return;
     }
     
@@ -582,49 +595,63 @@ function removeSpecificDate(index) {
 // ============================================
 
 /**
- * loadSavedSchedule() - Load previously saved schedule from localStorage
- * Called on page initialization para i-restore yung saved data
- * 
- * TODO: In production, palitan to ng fetch() call sa .NET API
- * Para galing sa database yung data instead of localStorage
+ * loadSavedSchedule() - Load previously saved schedule from API
  */
-function loadSavedSchedule() {
-    const saved = localStorage.getItem('teacherSchedule');
-    
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);  // Parse yung JSON string
-            
-            // Restore weekly schedule for each day
+async function loadSavedSchedule() {
+    try {
+        const response = await apiCall('/teacheravailability/my');
+        if (!response || !response.ok) return;
+
+        const data = await response.json();
+
+        // Restore weekly schedule
+        if (data.weekly) {
             Object.keys(data.weekly).forEach(day => {
-                scheduleState.weekly[day] = data.weekly[day];
-                
-                // Kung enabled yung day, update yung UI
-                if (data.weekly[day].enabled) {
+                if (!scheduleState.weekly[day]) return;
+                const dayData = data.weekly[day];
+                scheduleState.weekly[day].enabled = dayData.enabled;
+                scheduleState.weekly[day].slots = (dayData.slots || []).map(s => ({
+                    id: Date.now() + Math.random(),
+                    startTime: s.startTime,
+                    startPeriod: s.startPeriod,
+                    endTime: s.endTime,
+                    endPeriod: s.endPeriod,
+                    isPreferred: s.isPreferred
+                }));
+
+                if (dayData.enabled) {
                     const checkbox = document.getElementById(`${day}Check`);
                     const dayRow = document.querySelector(`.day-row[data-day="${day}"]`);
-                    
                     if (checkbox && dayRow) {
                         checkbox.checked = true;
                         dayRow.classList.add('active');
-                        // Render yung time slots (don't dispatch change para hindi mag-add ng extra slot)
                         renderTimeSlots(day);
                     }
                 }
             });
-            
-            // Restore specific dates
-            if (data.specificDates) {
-                // Convert date strings back to Date objects
-                scheduleState.specificDates = data.specificDates.map(item => ({
-                    ...item,
-                    date: new Date(item.date)  // Parse ISO string to Date
-                }));
-                renderSpecificDatesList();
-            }
-        } catch (e) {
-            console.error('Error loading schedule:', e);
         }
+
+        // Restore specific dates (group flat rows by date)
+        if (data.specificDates && data.specificDates.length > 0) {
+            const grouped = {};
+            data.specificDates.forEach(item => {
+                if (!grouped[item.date]) {
+                    grouped[item.date] = { date: new Date(item.date + 'T00:00:00'), isClosed: item.isClosed, slots: [] };
+                }
+                if (!item.isClosed && item.startTime && item.endTime) {
+                    grouped[item.date].slots.push({
+                        startTime: item.startTime,
+                        startPeriod: item.startPeriod,
+                        endTime: item.endTime,
+                        endPeriod: item.endPeriod
+                    });
+                }
+            });
+            scheduleState.specificDates = Object.values(grouped);
+            renderSpecificDatesList();
+        }
+    } catch (e) {
+        console.error('Error loading schedule:', e);
     }
 }
 
@@ -633,43 +660,79 @@ function loadSavedSchedule() {
 // ============================================
 
 /**
- * Save button click handler - Stores schedule to localStorage
- * Shows visual feedback (button changes to "Saved!")
- * 
- * TODO: In production, gawing AJAX POST request to .NET API
- * Para ma-save sa database instead of localStorage
+ * Save button click handler - Saves schedule to API
  */
-document.getElementById('saveScheduleBtn')?.addEventListener('click', function() {
-    // Prepare data for saving
-    // Convert Date objects to ISO strings para ma-store properly
-    const dataToSave = {
-        weekly: scheduleState.weekly,
-        specificDates: scheduleState.specificDates.map(item => ({
-            ...item,
-            date: item.date.toISOString()  // Convert Date to string
-        }))
-    };
-    
-    // Save to localStorage (demo mode)
-    // TODO: apiCall('/teacher/schedule', { method: 'POST', body: JSON.stringify(dataToSave) })
-    localStorage.setItem('teacherSchedule', JSON.stringify(dataToSave));
-    
-    // ============================================
-    // SUCCESS FEEDBACK UI
-    // ============================================
-    
-    // Change button appearance to show success
+document.getElementById('saveScheduleBtn')?.addEventListener('click', async function() {
     const btn = this;
-    const originalText = btn.innerHTML;  // Save original text
-    
-    btn.innerHTML = '<i class="bx bx-check me-2"></i>Saved!';
-    btn.classList.add('btn-success');
-    btn.classList.remove('btn-primary');
-    
-    // Revert back to original after 2 seconds
+    const originalText = btn.innerHTML;
+
+    // Build DTO matching the API's SaveScheduleDto
+    const dataToSave = {
+        weekly: {},
+        specificDates: []
+    };
+
+    // Weekly schedule
+    Object.keys(scheduleState.weekly).forEach(day => {
+        const dayData = scheduleState.weekly[day];
+        dataToSave.weekly[day] = {
+            enabled: dayData.enabled,
+            slots: dayData.slots.map(s => ({
+                startTime: s.startTime,
+                startPeriod: s.startPeriod,
+                endTime: s.endTime,
+                endPeriod: s.endPeriod,
+                isPreferred: s.isPreferred
+            }))
+        };
+    });
+
+    // Specific dates
+    scheduleState.specificDates.forEach(item => {
+        const dateStr = item.date.getFullYear() + '-' +
+            String(item.date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(item.date.getDate()).padStart(2, '0');
+
+        dataToSave.specificDates.push({
+            date: dateStr,
+            isClosed: item.isClosed,
+            slots: item.isClosed ? [] : (item.slots || []).map(s => ({
+                startTime: s.startTime,
+                startPeriod: s.startPeriod,
+                endTime: s.endTime,
+                endPeriod: s.endPeriod,
+                isPreferred: false
+            }))
+        });
+    });
+
+    try {
+        btn.disabled = true;
+        const response = await apiCall('/teacheravailability/save', {
+            method: 'POST',
+            body: JSON.stringify(dataToSave)
+        });
+
+        if (response && response.ok) {
+            btn.innerHTML = '<i class="bx bx-check me-2"></i>Saved!';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-primary');
+        } else {
+            btn.innerHTML = '<i class="bx bx-x me-2"></i>Error!';
+            btn.classList.add('btn-danger');
+            btn.classList.remove('btn-primary');
+        }
+    } catch (e) {
+        console.error('Error saving schedule:', e);
+        btn.innerHTML = '<i class="bx bx-x me-2"></i>Error!';
+        btn.classList.add('btn-danger');
+        btn.classList.remove('btn-primary');
+    }
+
+    btn.disabled = false;
     setTimeout(() => {
         btn.innerHTML = originalText;
-        btn.classList.remove('btn-success');
+        btn.classList.remove('btn-success', 'btn-danger');
         btn.classList.add('btn-primary');
     }, 2000);
 });

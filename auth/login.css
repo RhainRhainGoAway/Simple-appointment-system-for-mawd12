@@ -16,6 +16,15 @@ body {
     color: #333;
 }
 
+.site-logo {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    height: 56px;
+    width: auto;
+    z-index: 10;
+}
+
 .container {
     margin: 0 15px;
 }

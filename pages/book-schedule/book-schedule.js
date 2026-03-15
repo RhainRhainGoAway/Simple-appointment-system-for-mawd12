@@ -1,86 +1,67 @@
-/*
- * BOOK-SCHEDULE.JS - Book Consultation Page JavaScript
- * Ito yung main JS file para sa Book Consultation page ng students
- * 
- * Main features:
- * 1. Week Navigation - Para mag-navigate sa different weeks ng schedule
- * 2. Date Range Display - Para i-show kung anong dates ang nasa screen
- * 3. Time Slot Click Handler - Para ma-trigger yung booking modal
- * 
- * Dependencies:
- * - book.js (modal functionality)
- * - book.html (modal HTML)
- */
+// ============================================
+// LOCAL DATE FORMATTING (timezone-safe)
+// ============================================
+function toLocalDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
 
 // ============================================
 // DATE NAVIGATION VARIABLES
 // ============================================
 
-// Current week start date - ito yung Monday ng week na nasa display
-// Date object para madaling mag-manipulate ng dates
-let currentWeekStart = new Date('2025-09-22');
-
-// Original week start - para sa reference kung gusto bumalik sa default
-const originalWeekStart = new Date('2025-09-22');
-
-// Array ng days of week - short names para sa headers
+let currentWeekStart = getMonday(new Date());
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat'];
-
-// Array ng months - short names para sa display
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// ============================================
-// DATE RANGE UPDATE FUNCTION
-// ============================================
+// Pagination state
+let allTeachers = [];
+let currentPage = 1;
+const rowsPerPage = 4;
 
-/**
- * updateDateRange() - Updates yung date range display at table headers
- * Called every time mag-navigate sa different week
- * 
- * Displays format: "22-26 Sep, 2025" (Monday to Friday)
- */
-function updateDateRange() {
-    // Calculate yung end of week (Friday = +4 days from Monday)
-    const weekEnd = new Date(currentWeekStart);
-    weekEnd.setDate(weekEnd.getDate() + 4);  // Monday + 4 = Friday
-    
-    // Get individual date components para sa display
-    const startDay = currentWeekStart.getDate();       // Day number (e.g., 22)
-    const endDay = weekEnd.getDate();                  // Day number (e.g., 26)
-    const month = months[currentWeekStart.getMonth()]; // Month name (e.g., "Sep")
-    const year = currentWeekStart.getFullYear();       // Year (e.g., 2025)
-    
-    // Update yung date range text sa UI
-    document.getElementById('dateRangeText').textContent = `${startDay}-${endDay} ${month}, ${year}`;
-    
-    // Update din yung table headers with actual dates
-    updateTableHeaders();
+function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    if (day === 0) {
+        // Sunday -> next Monday
+        d.setDate(d.getDate() + 1);
+    } else if (day === 6) {
+        // Saturday -> next Monday
+        d.setDate(d.getDate() + 2);
+    } else {
+        // Mon-Fri -> this week's Monday
+        d.setDate(d.getDate() - (day - 1));
+    }
+    d.setHours(0, 0, 0, 0);
+    return d;
 }
 
 // ============================================
-// TABLE HEADERS UPDATE
+// DATE RANGE UPDATE
 // ============================================
 
-/**
- * updateTableHeaders() - Update yung column headers sa schedule table
- * Para may date number at day name sa each column
- * 
- * Format: "22 Mon", "23 Tue", etc.
- */
+function updateDateRange() {
+    const weekEnd = new Date(currentWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 4);
+
+    const startDay = currentWeekStart.getDate();
+    const endDay = weekEnd.getDate();
+    const month = months[currentWeekStart.getMonth()];
+    const year = currentWeekStart.getFullYear();
+
+    document.getElementById('dateRangeText').textContent = `${startDay}-${endDay} ${month}, ${year}`;
+    updateTableHeaders();
+}
+
 function updateTableHeaders() {
-    // Get all header cells - index 0 is "Time" column, 1-5 are the day columns
     const headerCells = document.querySelectorAll('.schedule-table thead th');
-    
-    // Loop through Monday to Friday (columns 1 to 5)
     for (let i = 1; i <= 5; i++) {
-        // Calculate date for this column
         const date = new Date(currentWeekStart);
-        date.setDate(date.getDate() + (i - 1));  // i=1 is Monday (+0), i=2 is Tuesday (+1), etc.
-        
-        const dayNum = date.getDate();              // Day number
-        const dayName = daysOfWeek[date.getDay()];  // Day name
-        
-        // Update header text
+        date.setDate(date.getDate() + (i - 1));
+        const dayNum = date.getDate();
+        const dayName = daysOfWeek[date.getDay()];
         if (headerCells[i]) {
             headerCells[i].textContent = `${dayNum} ${dayName}`;
         }
@@ -88,132 +69,216 @@ function updateTableHeaders() {
 }
 
 // ============================================
-// WEEK NAVIGATION FUNCTIONS
+// WEEK NAVIGATION
 // ============================================
 
-/**
- * previousWeek() - Navigate to previous week
- * Called when clicking the "previous" button
- * Subtracts 7 days from current week start
- */
 function previousWeek() {
+    const prevWeek = new Date(currentWeekStart);
+    prevWeek.setDate(prevWeek.getDate() - 7);
+    const earliest = getMonday(new Date());
+    if (prevWeek < earliest) return; // Don't go before current week
     currentWeekStart.setDate(currentWeekStart.getDate() - 7);
     updateDateRange();
+    loadTeacherSchedules();
 }
 
-/**
- * nextWeek() - Navigate to next week
- * Called when clicking the "next" button
- * Adds 7 days to current week start
- */
 function nextWeek() {
     currentWeekStart.setDate(currentWeekStart.getDate() + 7);
     updateDateRange();
+    loadTeacherSchedules();
 }
 
-/**
- * goToToday() - Jump to current week (week containing today's date)
- * Finds the Monday of current week
- * 
- * Logic:
- * 1. Get today's date
- * 2. Calculate how many days since last Monday
- * 3. Subtract those days to get Monday
- */
 function goToToday() {
-    const today = new Date();
-    const dayOfWeek = today.getDay();  // 0=Sunday, 1=Monday, etc.
-    
-    // Calculate difference to get to Monday
-    // Special handling for Sunday (dayOfWeek = 0)
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    
-    currentWeekStart = new Date(today.setDate(diff));
+    currentWeekStart = getMonday(new Date());
     updateDateRange();
+    loadTeacherSchedules();
 }
 
 // ============================================
-// DATE FORMATTING FOR MODAL
+// FORMAT DATE FOR MODAL
 // ============================================
 
-/**
- * formatFullDate() - Convert week start + offset to full date string
- * Para sa modal display - shows complete formatted date
- * 
- * @param weekStart - Starting date of the week (Monday)
- * @param dayOffset - Number of days from Monday (0=Mon, 1=Tue, etc.)
- * @returns string - Formatted date like "Monday, September 22, 2025"
- */
 function formatFullDate(weekStart, dayOffset) {
     const date = new Date(weekStart);
     date.setDate(date.getDate() + dayOffset);
-    
-    // Full day names para mas formal yung look
     const daysOfWeekFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 
+    const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June',
                         'July', 'August', 'September', 'October', 'November', 'December'];
-    
-    const dayName = daysOfWeekFull[date.getDay()];
-    const monthName = monthsFull[date.getMonth()];
-    const dayNum = date.getDate();
-    const year = date.getFullYear();
-    
-    return `${dayName}, ${monthName} ${dayNum}, ${year}`;
+    return `${daysOfWeekFull[date.getDay()]}, ${monthsFull[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+function formatFullDateFromLocalDateStr(dateStr) {
+    const parts = String(dateStr).split('-').map(Number);
+    if (parts.length !== 3 || parts.some(n => Number.isNaN(n))) return '';
+    const [y, m, d] = parts;
+    const date = new Date(y, m - 1, d);
+    const daysOfWeekFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const monthsFull = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${daysOfWeekFull[date.getDay()]}, ${monthsFull[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ============================================
+// LOAD TEACHER SCHEDULES FROM API
+// ============================================
+
+async function loadTeacherSchedules() {
+    const tbody = document.getElementById('teacherScheduleBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading...</td></tr>';
+
+    const startDate = toLocalDateStr(currentWeekStart);
+
+    try {
+        const response = await apiCall(`/teacheravailability/week?start=${startDate}`);
+        if (response && response.ok) {
+            allTeachers = await response.json();
+
+            // Safety filter: don't show teachers with no available slots across the week
+            allTeachers = (allTeachers || []).filter(t =>
+                Array.isArray(t.schedule)
+                && t.schedule.some(d => !d.closed && Array.isArray(d.slots) && d.slots.length > 0)
+            );
+            currentPage = 1;
+            renderTeacherTable();
+        } else {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Failed to load schedules</td></tr>';
+        }
+    } catch (error) {
+        console.error('Error loading schedules:', error);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Error loading schedules</td></tr>';
+    }
+}
+
+function renderTeacherTable() {
+    const tbody = document.getElementById('teacherScheduleBody');
+    const totalPages = Math.ceil(allTeachers.length / rowsPerPage);
+    const start = (currentPage - 1) * rowsPerPage;
+    const pageTeachers = allTeachers.slice(start, start + rowsPerPage);
+
+    if (pageTeachers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No teacher schedules available</td></tr>';
+        document.getElementById('paginationContainer').innerHTML = '';
+        return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    tbody.innerHTML = pageTeachers.map(teacher => {
+        const dayCells = teacher.schedule.map((day, dayIndex) => {
+            // Check if this day is in the past
+            const slotDate = new Date(currentWeekStart);
+            slotDate.setDate(slotDate.getDate() + dayIndex);
+            slotDate.setHours(0, 0, 0, 0);
+            const isPast = slotDate < today;
+            const bookDateStr = toLocalDateStr(slotDate);
+
+            if (isPast || day.closed || day.slots.length === 0) {
+                return `<td><div class="slots-container"><button class="time-slot closed">Closed</button></div></td>`;
+            }
+            const slotButtons = day.slots.map(slot => {
+                const timeRange = `${slot.startTime} - ${slot.endTime}`;
+                return `<button class="time-slot" data-teacher-id="${teacher.teacherId}" data-teacher-name="${escapeHtml(teacher.teacherName)}" data-book-date="${bookDateStr}" data-day-index="${dayIndex}" data-time-range="${escapeHtml(timeRange)}">${escapeHtml(timeRange)}</button>`;
+            }).join('');
+            return `<td><div class="slots-container">${slotButtons}</div></td>`;
+        }).join('');
+
+        return `
+            <tr>
+                <td>
+                    <div class="teacher-info">
+                        <img src="${teacher.teacherProfilePicture || '../../assets/default-avatar.png'}" alt="Teacher" class="teacher-avatar">
+                        <div>
+                            <p class="teacher-name">${escapeHtml(teacher.teacherName)}</p>
+                        </div>
+                    </div>
+                </td>
+                ${dayCells}
+            </tr>
+        `;
+    }).join('');
+
+    // Attach click handlers to time slots
+    tbody.querySelectorAll('.time-slot:not(.closed)').forEach(slot => {
+        slot.addEventListener('click', function() {
+            const teacherName = this.dataset.teacherName;
+            const timeRange = this.dataset.timeRange;
+
+            const bookDateStr = this.dataset.bookDate;
+            if (!bookDateStr) {
+                alert('Unable to determine the selected date. Please refresh and try again.');
+                return;
+            }
+
+            const dateText = formatFullDateFromLocalDateStr(bookDateStr) || formatFullDate(currentWeekStart, parseInt(this.dataset.dayIndex));
+
+            // Store teacher ID for booking
+            bookingState.teacherId = parseInt(this.dataset.teacherId);
+
+            // Exact local date for API
+            bookingState.bookDate = bookDateStr;
+
+            openBookingModal(teacherName, dateText, timeRange);
+        });
+    });
+
+    // Render pagination
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const container = document.getElementById('paginationContainer');
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '<ul class="pagination pagination-sm mb-0">';
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link rounded-circle border-0" href="#" onclick="changePage(${currentPage - 1}); return false;"><i class='bx bx-chevron-left'></i></a></li>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link rounded-circle border-0 ${i === currentPage ? 'bg-primary' : ''}" href="#" onclick="changePage(${i}); return false;">${i}</a></li>`;
+    }
+
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link rounded-circle border-0" href="#" onclick="changePage(${currentPage + 1}); return false;"><i class='bx bx-chevron-right'></i></a></li>`;
+    html += '</ul>';
+    container.innerHTML = html;
+}
+
+function changePage(page) {
+    const totalPages = Math.ceil(allTeachers.length / rowsPerPage);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderTeacherTable();
 }
 
 // ============================================
 // PAGE INITIALIZATION
 // ============================================
 
-// DOMContentLoaded - Initialize everything kapag ready na yung page
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize yung date range display
     updateDateRange();
-    
-    // Add click handler sa "Today" button
+
     const todayBtn = document.querySelector('.btn-outline-secondary');
     if (todayBtn) {
         todayBtn.addEventListener('click', goToToday);
     }
-    
-    // Dynamic load ng booking modal HTML
-    // Fetching from components folder para organized yung structure
+
+    // Load booking modal HTML
     fetch('../../components/modals/book.html')
         .then(response => response.text())
         .then(html => {
             document.getElementById('booking-modal-container').innerHTML = html;
         });
-    
-    // ============================================
-    // TIME SLOT CLICK HANDLERS
-    // ============================================
-    
-    // Add click event listeners sa lahat ng available time slots
-    // Excluding yung may 'closed' class kasi hindi pwede yun i-book
-    document.querySelectorAll('.time-slot:not(.closed)').forEach(slot => {
-        slot.addEventListener('click', function() {
-            // Get teacher info from the row
-            const teacherRow = this.closest('tr');
-            const teacherName = teacherRow.querySelector('.teacher-name').textContent;
-            const timeSlot = this.textContent;  // Time range ng slot
-            
-            // Determine kung anong column/day yung clinick
-            const cell = this.closest('td');
-            const row = cell.parentElement;
-            const cellIndex = Array.from(row.children).indexOf(cell);
-            
-            // Get yung date info from header para sa modal
-            const headerCells = document.querySelectorAll('.schedule-table thead th');
-            const dayHeader = headerCells[cellIndex]?.textContent || '';
-            
-            // Format yung full date para sa modal display
-            // cellIndex - 1 kasi index 0 is "Time" column, days start at index 1
-            const dateText = formatFullDate(currentWeekStart, cellIndex - 1);
-            
-            // Open yung booking modal with all the info
-            // openBookingModal is defined sa book.js
-            openBookingModal(teacherName, dateText, timeSlot);
-        });
-        });
-    });
+
+    // Load teacher schedules from API
+    loadTeacherSchedules();
+});
 

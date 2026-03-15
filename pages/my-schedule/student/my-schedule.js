@@ -1,316 +1,252 @@
-/*
- * MY-SCHEDULE.JS (STUDENT) - Student's Personal Schedule View
- * Ito yung JS file para sa "My Schedule" page ng student
- * 
- * Main features:
- * 1. FullCalendar Integration - Para i-display yung weekly schedule
- * 2. Subject Events - Mga klase ng student
- * 3. Consultation Events - Mga booked consultations sa teachers
- * 
- * Dependencies:
- * - FullCalendar JS library (CDN or local)
- * - FullCalendar CSS
- * 
- * Note: Currently, hardcoded pa yung events data (demo mode)
- * TODO: Fetch events from .NET API/database
- */
-
 // ============================================
-// FULLCALENDAR INITIALIZATION
+// STUDENT MY-SCHEDULE - Fetch from API
 // ============================================
 
-// DOMContentLoaded - Initialize calendar kapag ready na yung page
+// Day-of-week mapping for class schedules
+const dayMap = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5 };
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Get yung calendar container element
     var calendarEl = document.getElementById('schedule-calendar');
-    
-    // Check kung may calendar container ba sa page
-    if (calendarEl) {
-        // Create FullCalendar instance with configuration
+    if (!calendarEl) return;
+
+    if (typeof FullCalendar === 'undefined') {
+        calendarEl.innerHTML = '<p class="p-4 text-muted">Calendar failed to load. Check your connection and refresh the page.</p>';
+        return;
+    }
+
+    try {
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            // ============================================
-            // CALENDAR VIEW SETTINGS
-            // ============================================
-            initialView: 'timeGridWeek',     // Weekly view na may time grid
-            initialDate: '2025-09-22',       // Starting date (demo date)
-            
-            // Header toolbar configuration - navigation buttons
-            headerToolbar: {
-                left: 'prev',                // Previous button sa left
-                center: 'title',             // Title sa center
-                right: 'next'                // Next button sa right
-            },
-            
-            // ============================================
-            // DATE/TIME FORMATTING
-            // ============================================
-            titleFormat: { weekday: 'short', day: 'numeric' },
-            dayHeaderFormat: { weekday: 'short', day: 'numeric' },  // Column headers (Mon 22, Tue 23, etc.)
-            
-            // Time slot configuration
-            slotMinTime: '07:00:00',          // Start ng visible time (7 AM)
-            slotMaxTime: '18:00:00',          // End ng visible time (6 PM)
-            weekends: false,                  // Hide weekends (Saturday/Sunday)
-            allDaySlot: false,                // Hindi kailangan ng all-day row
-            
-            // ============================================
-            // SIZING AND APPEARANCE
-            // ============================================
-            height: 'auto',                   // Auto height based sa content
-            contentHeight: 700,               // Max content height in pixels
-            slotDuration: '01:00:00',         // 1 hour per slot
-            slotLabelInterval: '01:00',       // Label every hour
-            
-            // Time label format (left side)
-            slotLabelFormat: {
-                hour: 'numeric',
-                minute: '2-digit',
-                meridiem: 'short'             // Shows AM/PM
-            },
-            
-            // Event time format (sa events mismo)
-            eventTimeFormat: {
-                hour: 'numeric',
-                minute: '2-digit',
-                meridiem: 'short'
-            },
-            
-            // ============================================
-            // EVENTS DATA (HARDCODED FOR DEMO)
-            // ============================================
-            // TODO: Replace with fetch() call to .NET API
-            // Example: events: `${API_BASE}/schedules/student`
-            events: [
-                // ===== MONDAY (Sept 22) =====
-                // Subject events - mga klase ng student
-                {
-                    title: 'Filipino sa Piling Larang',
-                    start: '2025-09-22T08:00:00',
-                    end: '2025-09-22T09:30:00',
-                    classNames: ['subject-event'],      // CSS class para sa styling
-                    backgroundColor: '#f8f9fa',         // Light gray background
-                    textColor: '#374151',               // Dark text
-                    borderColor: '#d1d5db'
-                },
-                // Consultation events - booked consultation sa teacher
-                // Yellow color para madaling makita
-                {
-                    title: 'Ms. Kim Minju',
-                    start: '2025-09-22T09:30:00',
-                    end: '2025-09-22T09:50:00',
-                    classNames: ['consultation-event'], // Different class para iba styling
-                    backgroundColor: '#facc15',         // Yellow background
-                    textColor: '#1a1a2e',
-                    borderColor: '#facc15'
-                },
-                {
-                    title: 'Practical Research 2',
-                    start: '2025-09-22T10:00:00',
-                    end: '2025-09-22T11:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Ms. Jang Wonyoung',
-                    start: '2025-09-22T11:40:00',
-                    end: '2025-09-22T11:50:00',
-                    classNames: ['consultation-event'],
-                    backgroundColor: '#facc15',
-                    textColor: '#1a1a2e',
-                    borderColor: '#facc15'
-                },
-                {
-                    title: 'Personal Development',
-                    start: '2025-09-22T12:30:00',
-                    end: '2025-09-22T14:00:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Pagbasa at Pagsusuri ng Iba\'t Ibang Teksto Tungo sa Pananaliksik',
-                    start: '2025-09-22T14:00:00',
-                    end: '2025-09-22T15:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-
-                // ===== TUESDAY (Sept 23) =====
-                {
-                    title: 'Filipino sa Piling Larang',
-                    start: '2025-09-23T08:00:00',
-                    end: '2025-09-23T09:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Ms. Jo Yuri',
-                    start: '2025-09-23T09:30:00',
-                    end: '2025-09-23T09:50:00',
-                    classNames: ['consultation-event'],
-                    backgroundColor: '#facc15',
-                    textColor: '#1a1a2e',
-                    borderColor: '#facc15'
-                },
-                {
-                    title: 'Practical Research 2',
-                    start: '2025-09-23T10:00:00',
-                    end: '2025-09-23T11:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Personal Development',
-                    start: '2025-09-23T12:30:00',
-                    end: '2025-09-23T14:00:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Pagbasa at Pagsusuri ng Iba\'t Ibang Teksto Tungo sa Pananaliksik',
-                    start: '2025-09-23T14:00:00',
-                    end: '2025-09-23T15:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Computer Programming 4',
-                    start: '2025-09-23T16:00:00',
-                    end: '2025-09-23T17:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-
-                // ===== WEDNESDAY (Sept 24) =====
-                {
-                    title: 'Physical Science',
-                    start: '2025-09-24T08:00:00',
-                    end: '2025-09-24T09:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Physical Education',
-                    start: '2025-09-24T10:00:00',
-                    end: '2025-09-24T12:00:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Ms. An Yujin',
-                    start: '2025-09-24T12:40:00',
-                    end: '2025-09-24T12:50:00',
-                    classNames: ['consultation-event'],
-                    backgroundColor: '#facc15',
-                    textColor: '#1a1a2e',
-                    borderColor: '#facc15'
-                },
-                {
-                    title: 'English for Academic and Professional Purposes',
-                    start: '2025-09-24T13:00:00',
-                    end: '2025-09-24T16:00:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-
-                // ===== THURSDAY (Sept 25) =====
-                {
-                    title: 'Physical Science',
-                    start: '2025-09-25T08:00:00',
-                    end: '2025-09-25T09:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Computer Programming 4',
-                    start: '2025-09-25T10:00:00',
-                    end: '2025-09-25T11:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Computer Programming 4',
-                    start: '2025-09-25T12:30:00',
-                    end: '2025-09-25T14:00:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                },
-                {
-                    title: 'Computer Programming 5',
-                    start: '2025-09-25T14:00:00',
-                    end: '2025-09-25T15:30:00',
-                    classNames: ['subject-event'],
-                    backgroundColor: '#f8f9fa',
-                    textColor: '#374151',
-                    borderColor: '#d1d5db'
-                }
-            ],
-            
-            // ============================================
-            // EVENT HANDLERS
-            // ============================================
-            
-            /**
-             * eventClick - Handler kapag clinick yung isang event
-             * Para sa consultation events, i-show yung details
-             */
-            eventClick: function(info) {
-                // Check kung consultation event ba yung clinick
-                if (info.event.classNames.includes('consultation-event')) {
-                    // Show alert with consultation details
-                    // TODO: Gawing proper modal instead of alert
-                    alert('Consultation with: ' + info.event.title + '\n' + 
-                          'Time: ' + info.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' +
-                          info.event.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-                }
-            },
-            
-            /**
-             * datesSet - Handler kapag nag-change yung dates na visible
-             * Para i-update yung month selector text sa UI
-             */
-            datesSet: function(dateInfo) {
-                // Month names for display
-                const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                'July', 'August', 'September', 'October', 'November', 'December'];
-                
-                // Get current start date ng view
-                const date = dateInfo.view.currentStart;
-                
-                // Update month selector text
-                document.getElementById('currentMonth').textContent = 
-                    months[date.getMonth()] + ' ' + date.getFullYear();
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+            left: 'prev',
+            center: 'title',
+            right: 'next'
+        },
+        titleFormat: { weekday: 'short', day: 'numeric' },
+        dayHeaderFormat: { weekday: 'short', day: 'numeric' },
+        slotMinTime: '07:00:00',
+        slotMaxTime: '18:00:00',
+        weekends: false,
+        allDaySlot: false,
+        height: 'auto',
+        contentHeight: 700,
+        slotDuration: '01:00:00',
+        slotLabelInterval: '01:00',
+        slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
+        eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
+        eventOrder: 'start',
+        eventOrderStrict: true,
+        events: function(info, successCallback, failureCallback) {
+            loadEvents().then(successCallback).catch(function(e) {
+                console.error('Error loading events:', e);
+                successCallback([]);
+            });
+        },
+        eventContent: function(arg) {
+            if (arg.event.extendedProps.type === 'subject') {
+                var wrap = document.createElement('div');
+                // Use non-fc-* classnames to avoid nesting FullCalendar's own .fc-event-main
+                // which can cause the title text to be visually clipped.
+                wrap.className = 'subject-card';
+                var titleEl = document.createElement('div');
+                titleEl.className = 'subject-card__title';
+                titleEl.textContent = arg.event.title || '';
+                var timeEl = document.createElement('div');
+                timeEl.className = 'subject-card__time';
+                timeEl.textContent = arg.timeText || '';
+                wrap.appendChild(titleEl);
+                wrap.appendChild(timeEl);
+                return { domNodes: [wrap] };
             }
-        });
-        
-        // Render yung calendar sa DOM
+
+            const name = arg.event.extendedProps.personName || arg.event.title || '';
+            const time = arg.timeText || '';
+            const profilePicture = arg.event.extendedProps.personProfilePicture || '';
+
+            const consultWrap = document.createElement('div');
+            consultWrap.className = 'consultation-card';
+
+            const avatar = document.createElement(profilePicture ? 'img' : 'div');
+            avatar.className = 'consultation-card__avatar';
+            if (profilePicture) {
+                avatar.src = profilePicture;
+                avatar.alt = name;
+                avatar.loading = 'lazy';
+            } else {
+                avatar.textContent = (name || '?').trim().slice(0, 1).toUpperCase();
+            }
+
+            const content = document.createElement('div');
+            content.className = 'consultation-card__content';
+
+            const nameEl = document.createElement('div');
+            nameEl.className = 'consultation-card__name';
+            nameEl.textContent = name;
+
+            const timeElConsult = document.createElement('div');
+            timeElConsult.className = 'consultation-card__time';
+            timeElConsult.textContent = time;
+
+            content.appendChild(nameEl);
+            content.appendChild(timeElConsult);
+            consultWrap.appendChild(avatar);
+            consultWrap.appendChild(content);
+
+            return { domNodes: [consultWrap] };
+        },
+        eventDidMount: function(info) {
+            // Stacked-paper layering: later bookings should appear above earlier ones
+            // if visual overlap happens (e.g., due to min-height styling).
+            if (info.event.extendedProps.type !== 'consultation') return;
+            if (!info.event.start) return;
+
+            const start = info.event.start;
+            const end = info.event.end || start;
+            const startMinutes = start.getHours() * 60 + start.getMinutes();
+            const endMinutes = end.getHours() * 60 + end.getMinutes();
+            const durationMinutes = Math.max(0, endMinutes - startMinutes);
+
+            const title = String(info.event.title || '');
+            let titleHash = 0;
+            for (let i = 0; i < title.length; i++) titleHash = (titleHash + title.charCodeAt(i)) % 50;
+
+            // Earlier start -> lower z. Later start -> higher z.
+            const z = 1000 + (startMinutes * 10) + Math.min(99, durationMinutes) + titleHash;
+
+            const harness = info.el.closest('.fc-timegrid-event-harness');
+
+            const setZ = (val) => {
+                if (harness) harness.style.setProperty('z-index', String(val), 'important');
+                info.el.style.setProperty('z-index', String(val), 'important');
+            };
+
+            setZ(z);
+
+            // Ensure hovered card appears above other overlapping bookings.
+            info.el.addEventListener('mouseenter', () => setZ(999999));
+            info.el.addEventListener('mouseleave', () => setZ(z));
+        },
+        eventClick: function(info) {
+            if (info.event.extendedProps.type === 'consultation') {
+                const props = info.event.extendedProps;
+                const startDate = info.event.start;
+                const endDate = info.event.end;
+                const dateOpts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const timeOpts = { hour: '2-digit', minute: '2-digit' };
+
+                document.getElementById('modalPersonName').textContent = props.personName || info.event.title;
+                document.getElementById('modalDate').textContent = startDate.toLocaleDateString([], dateOpts);
+                document.getElementById('modalTime').textContent = startDate.toLocaleTimeString([], timeOpts) + ' - ' + endDate.toLocaleTimeString([], timeOpts);
+                document.getElementById('modalLocation').textContent = props.location || 'Faculty';
+                document.getElementById('modalReason').textContent = props.reason || 'No reason provided';
+                document.getElementById('modalNotes').textContent = props.notes || 'No notes';
+
+                new bootstrap.Modal(document.getElementById('consultationModal')).show();
+            }
+        },
+        datesSet: function(dateInfo) {
+            const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                            'July', 'August', 'September', 'October', 'November', 'December'];
+            const date = dateInfo.view.currentStart;
+            const monthEl = document.getElementById('currentMonth');
+            if (monthEl) {
+                monthEl.textContent = months[date.getMonth()] + ' ' + date.getFullYear();
+            }
+        }
+    });
+
         calendar.render();
+    } catch (e) {
+        console.error('Error initializing calendar:', e);
+        calendarEl.innerHTML = '<p class="p-4 text-muted">Calendar could not be displayed. Check the browser console for details.</p>';
     }
 });
+
+async function loadEvents() {
+    const events = [];
+
+    // Load class schedules (recurring weekly)
+    try {
+        const response = await apiCall('/schedules/student');
+            if (response && response.ok) {
+            const schedules = await response.json();
+            // Generate events for a wide date range so they show on any week navigated to
+            const baseDate = getMonday(new Date());
+            // Generate for 12 weeks before and after current week
+            for (let weekOffset = -12; weekOffset <= 12; weekOffset++) {
+                schedules.forEach(s => {
+                    const dayIndex = dayMap[s.dayOfWeek];
+                    if (dayIndex === undefined) return;
+
+                    const eventDate = new Date(baseDate);
+                    eventDate.setDate(eventDate.getDate() + (weekOffset * 7) + (dayIndex - 1));
+                    const dateStr = toLocalDateStr(eventDate);
+
+                    events.push({
+                        title: s.subjectName,
+                        start: `${dateStr}T${s.startTime}`,
+                        end: `${dateStr}T${s.endTime}`,
+                        classNames: ['subject-event'],
+                        backgroundColor: '#f8f9fa',
+                        textColor: '#374151',
+                        borderColor: '#d1d5db',
+                        extendedProps: { type: 'subject' }
+                    });
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading class schedules:', error);
+    }
+
+    // Load consultation events (accepted and pending appointments)
+    try {
+        const response = await apiCall('/appointments/student/consultations');
+        if (response && response.ok) {
+            const consultations = await response.json();
+
+            consultations.forEach(c => {
+                const isPending = c.status === 'pending';
+                events.push({
+                    title: isPending ? `${c.title} (Pending)` : c.title,
+                    start: c.start,
+                    end: c.end,
+                    classNames: [isPending ? 'pending-event' : 'consultation-event'],
+                    backgroundColor: isPending ? '#fb923c' : '#facc15',
+                    textColor: '#1a1a2e',
+                    borderColor: isPending ? '#fb923c' : '#facc15',
+                    extendedProps: {
+                        type: 'consultation',
+                        status: c.status,
+                        reason: c.reason,
+                        notes: c.notes,
+                        location: c.location,
+                        personName: isPending ? `${c.personName} (Pending)` : c.personName,
+                        personEmail: c.personEmail,
+                        personProfilePicture: c.personProfilePicture
+                    }
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Error loading consultations:', error);
+    }
+
+    return events;
+}
+
+function toLocalDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}

@@ -15,19 +15,19 @@
 // BOOKING STATE OBJECT
 // ============================================
 
-// Ito yung object na nag-sstore ng lahat ng booking information
-// Central storage para sa booking data - mas organized kesa scattered variables
 let bookingState = {
-    teacherName: '',       // Pangalan ng teacher na bibisitahin
-    date: '',              // Date ng consultation
-    timeRange: '',         // Available time range ng teacher (e.g., "9:00 AM - 12:00 PM")
-    startTime: '',         // Parsed start time
-    endTime: '',           // Parsed end time
-    selectedSlot: null,    // Yung napili na specific time slot
-    meetingTime: 10,       // Duration ng meeting in minutes (default: 10 mins)
-    reason: '',            // Reason for consultation
-    notes: '',             // Additional notes
-    bookedSlots: []        // Array ng mga slots na booked na (para hindi madoble)
+    teacherName: '',
+    teacherId: 0,
+    date: '',
+    bookDate: '',        // ISO date string for API (yyyy-MM-dd)
+    timeRange: '',
+    startTime: '',
+    endTime: '',
+    selectedSlot: null,
+    meetingTime: 10,
+    reason: '',
+    notes: '',
+    bookedSlots: []
 };
 
 // ============================================
@@ -177,8 +177,8 @@ function formatTime(hour, min) {
     
     // Pad minutes with leading zero kung kailangan (e.g., "5" -> "05")
     const displayMin = min.toString().padStart(2, '0');
-    
-    return `${displayHour}:${displayMin}`;
+
+    return `${displayHour}:${displayMin} ${period}`;
 }
 
 // ============================================
@@ -264,42 +264,49 @@ function selectReason(element) {
  * @param timeRange - Available time range (e.g., "9:00 AM - 12:00 PM")
  */
 function openBookingModal(teacherName, date, timeRange) {
-    // Store basic info sa bookingState
     bookingState.teacherName = teacherName;
     bookingState.date = date;
     bookingState.timeRange = timeRange;
-    
-    // Reset previous selections
+
     bookingState.selectedSlot = null;
     bookingState.reason = '';
     bookingState.notes = '';
-    bookingState.meetingTime = 10;  // Reset to default 10 minutes
-    
-    // Parse yung time range to get start and end times
-    // Example: "9:00 AM - 12:00 PM" -> startTime = "9:00 AM", endTime = "12:00 PM"
+    bookingState.meetingTime = 10;
+
     const [startTime, endTime] = timeRange.split(' - ');
     bookingState.startTime = startTime.trim();
     bookingState.endTime = endTime.trim();
-    
-    // Example booked slots (sa real app, galing to sa server/database)
-    // TODO: Fetch from .NET API kung ano na yung booked slots
-    bookingState.bookedSlots = ['10:00-10:10'];
-    
-    // Update modal content with teacher info
+
     document.getElementById('modalTeacherName').textContent = teacherName;
     document.getElementById('modalDateTime').textContent = `${date} | ${timeRange}`;
-    
-    // Generate yung available time slots
-    generateTimeSlots();
-    
-    // Reset form elements
+
+    // Fetch booked slots from API
+    fetchBookedSlots().then(() => {
+        generateTimeSlots();
+    });
+
     document.querySelectorAll('.reason-btn').forEach(btn => btn.classList.remove('selected'));
     document.getElementById('bookingNotes').value = '';
     document.getElementById('selectedMeetingTime').textContent = '10 Minutes';
-    
-    // Show modal using Bootstrap Modal API
+
     const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
     modal.show();
+}
+
+async function fetchBookedSlots() {
+    bookingState.bookedSlots = [];
+
+    if (!bookingState.bookDate || !bookingState.teacherId) return;
+
+    try {
+        const response = await apiCall(`/appointments/booked-slots?teacherId=${bookingState.teacherId}&date=${bookingState.bookDate}`);
+        if (response && response.ok) {
+            const slots = await response.json();
+            bookingState.bookedSlots = slots.map(s => `${s.startTime}-${s.endTime}`);
+        }
+    } catch (error) {
+        console.error('Error fetching booked slots:', error);
+    }
 }
 
 // ============================================
@@ -312,32 +319,106 @@ function openBookingModal(teacherName, date, timeRange) {
  * 
  * TODO: Implement actual AJAX request to .NET API para ma-save sa database
  */
-function confirmBooking() {
-    // Get notes from textarea
-    bookingState.notes = document.getElementById('bookingNotes').value;
-    
-    // Validation - dapat may selected time slot
+async function confirmBooking() {
+    bookingState.notes = document.getElementById('bookingNotes').value.trim();
+
     if (!bookingState.selectedSlot) {
         alert('Please select a time slot.');
         return;
     }
-    
-    // Validation - dapat may selected reason
+
     if (!bookingState.reason) {
         alert('Please select a reason for consultation.');
         return;
     }
-    
-    // TODO: AJAX request to save booking sa database
-    // apiCall('/appointments', { method: 'POST', body: JSON.stringify(bookingState) })
-    
-    // Success message (simple alert for now)
-    // TODO: Gawing mas magandang success modal or toast notification
-    alert(`Booking confirmed!\n\nTeacher: ${bookingState.teacherName}\nTime: ${bookingState.selectedSlot.start} - ${bookingState.selectedSlot.end}\nDuration: ${bookingState.meetingTime} minutes\nReason: ${bookingState.reason}`);
-    
-    // Close yung modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
-    modal.hide();
+
+    if (!bookingState.notes) {
+        document.getElementById('notesError').style.display = 'block';
+        document.getElementById('bookingNotes').focus();
+        return;
+    }
+    document.getElementById('notesError').style.display = 'none';
+
+    try {
+        const response = await apiCall('/appointments', {
+            method: 'POST',
+            body: JSON.stringify({
+                teacherId: bookingState.teacherId,
+                appointmentDate: bookingState.bookDate,
+                startTime: convertTo24Hour(bookingState.selectedSlot.start),
+                endTime: convertTo24Hour(bookingState.selectedSlot.end),
+                reason: bookingState.reason,
+                notes: bookingState.notes,
+                location: 'Faculty'
+            })
+        });
+
+        if (response && response.ok) {
+            alert('Booking confirmed! Your consultation request has been sent.');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
+            modal.hide();
+
+            // Reload schedules if function exists (book-schedule page)
+            if (typeof loadTeacherSchedules === 'function') {
+                loadTeacherSchedules();
+            }
+        } else {
+            let message = 'Failed to create booking.';
+            try {
+                const data = await response.json();
+                if (data && data.message) message = data.message;
+            } catch {
+                // Ignore JSON parsing errors
+            }
+            showBookingError(message);
+        }
+    } catch (error) {
+        console.error('Error creating booking:', error);
+        showBookingError('An error occurred. Please try again.');
+    }
+}
+
+function showBookingError(message) {
+    const el = document.getElementById('bookingErrorMessage');
+    if (el) el.textContent = message || 'Unable to book.';
+
+    const modalEl = document.getElementById('bookingErrorModal');
+    if (!modalEl || typeof bootstrap === 'undefined') {
+        alert(message || 'Unable to book.');
+        return;
+    }
+
+    // Simple + reliable: dim the booking modal while the error modal is open.
+    const bookingModal = document.getElementById('bookingModal');
+    if (bookingModal) bookingModal.classList.add('booking-dimmed');
+
+    modalEl.addEventListener(
+        'hidden.bs.modal',
+        () => {
+            if (bookingModal) bookingModal.classList.remove('booking-dimmed');
+            // Keep scroll locked if booking modal is still open
+            if (bookingModal && bookingModal.classList.contains('show')) {
+                document.body.classList.add('modal-open');
+            }
+        },
+        { once: true }
+    );
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+}
+
+function convertTo24Hour(timeStr) {
+    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+    if (!match) return timeStr;
+    let hour = parseInt(match[1]);
+    const min = match[2];
+    const period = match[3];
+    if (period) {
+        if (period.toUpperCase() === 'PM' && hour !== 12) hour += 12;
+        if (period.toUpperCase() === 'AM' && hour === 12) hour = 0;
+    }
+    return `${hour.toString().padStart(2, '0')}:${min}`;
 }
 
 // ============================================
