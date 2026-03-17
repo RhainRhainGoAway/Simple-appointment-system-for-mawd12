@@ -55,7 +55,8 @@ function loadProfileData() {
         if (userRole === 'teacher') {
             studentNumberField.style.display = 'none';
         } else {
-            studentNumberField.style.display = 'block';
+            // Restore CSS default (the `.profile-field` class uses flex)
+            studentNumberField.style.display = '';
             if (studentNumberInput) studentNumberInput.value = studentNumber;
         }
     }
