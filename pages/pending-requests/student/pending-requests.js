@@ -7,6 +7,7 @@ const ROWS_PER_PAGE = 8;
 
 // ---------- State ----------
 let allRequests = [];
+let filteredRequests = [];
 let currentPage  = 1;
 
 // ---------- DOM refs ----------
@@ -14,6 +15,7 @@ const tableBody = document.getElementById('pendingTableBody');
 const emptyState = document.getElementById('emptyState');
 const loadingState = document.getElementById('loadingState');
 const paginationContainer = document.getElementById('paginationContainer');
+const searchInput = document.getElementById('searchInput');
 
 // ============================================
 // Init
@@ -21,7 +23,29 @@ const paginationContainer = document.getElementById('paginationContainer');
 document.addEventListener('DOMContentLoaded', () => {
     if (!requireAuth(['student'])) return;
     fetchRequests();
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            applySearchFilter();
+            currentPage = 1;
+            render();
+        });
+    }
 });
+
+function applySearchFilter() {
+    const query = (searchInput?.value || '').toLowerCase().trim();
+    if (!query) {
+        filteredRequests = [...allRequests];
+        return;
+    }
+
+    filteredRequests = (allRequests || []).filter(row =>
+        String(row.teacherName || '').toLowerCase().includes(query)
+        || String(row.reason || '').toLowerCase().includes(query)
+        || String(row.status || '').toLowerCase().includes(query)
+    );
+}
 
 // ============================================
 // Fetch all appointments from API
@@ -38,10 +62,12 @@ async function fetchRequests() {
 
         allRequests = await response.json();
         currentPage = 1;
+        applySearchFilter();
         render();
     } catch (error) {
         console.error('Error fetching requests:', error);
         allRequests = [];
+        filteredRequests = [];
         render();
     }
 }
@@ -52,7 +78,7 @@ async function fetchRequests() {
 function render() {
     showLoading(false);
 
-    if (allRequests.length === 0) {
+    if (filteredRequests.length === 0) {
         tableBody.innerHTML = '';
         emptyState.style.display = 'block';
         paginationContainer.innerHTML = '';
@@ -67,7 +93,7 @@ function render() {
 // ---------- Table ----------
 function renderTable() {
     const start    = (currentPage - 1) * ROWS_PER_PAGE;
-    const pageData = allRequests.slice(start, start + ROWS_PER_PAGE);
+    const pageData = filteredRequests.slice(start, start + ROWS_PER_PAGE);
 
     tableBody.innerHTML = pageData.map(row => `
         <tr>
@@ -95,7 +121,7 @@ function renderTable() {
 
 // ---------- Pagination ----------
 function renderPagination() {
-    const totalPages = Math.ceil(allRequests.length / ROWS_PER_PAGE);
+    const totalPages = Math.ceil(filteredRequests.length / ROWS_PER_PAGE);
     if (totalPages <= 1) {
         paginationContainer.innerHTML = '';
         return;
@@ -122,7 +148,7 @@ function renderPagination() {
 }
 
 function goToPage(page) {
-    const totalPages = Math.ceil(allRequests.length / ROWS_PER_PAGE);
+    const totalPages = Math.ceil(filteredRequests.length / ROWS_PER_PAGE);
     if (page < 1 || page > totalPages) return;
     currentPage = page;
     renderTable();

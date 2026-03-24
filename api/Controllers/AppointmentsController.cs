@@ -398,7 +398,9 @@ namespace AppointmentSystemAPI.Controllers
                         x.a.CreatedAt,
                         x.a.StudentName,
                         x.a.StudentEmail,
-                        SectionName = section != null ? section.Name : "N/A"
+                        x.a.SectionId,
+                        SectionName = section != null ? section.Name : "N/A",
+                        GradeLevel = section != null && !string.IsNullOrWhiteSpace(section.GradeLevel) ? section.GradeLevel : "N/A"
                     }
                 )
                 .OrderBy(a => a.AppointmentDate)
@@ -413,7 +415,92 @@ namespace AppointmentSystemAPI.Controllers
                     a.Id,
                     firstName = nameParts[0],
                     lastName = nameParts.Length > 1 ? nameParts[1] : "",
+                    sectionId = a.SectionId,
                     sectionName = a.SectionName,
+                    gradeLevel = a.GradeLevel,
+                    appointmentDate = a.AppointmentDate.ToString("dd-MMM-yyyy"),
+                    startTime = a.StartTime.ToString("h:mm tt"),
+                    endTime = a.EndTime.ToString("h:mm tt"),
+                    status = a.Status,
+                    reason = a.Reason,
+                    notes = a.Notes,
+                    createdAt = a.CreatedAt.ToString("dd-MMM-yyyy"),
+                    studentEmail = a.StudentEmail
+                };
+            });
+
+            return Ok(result);
+        }
+
+        // GET: api/appointments/teacher/all
+        // Returns pending requests and history (accepted/cancelled)
+        [HttpGet("teacher/all")]
+        public async Task<IActionResult> GetTeacherAllRequests()
+        {
+            var teacherId = GetUserId();
+            if (teacherId == 0) return Unauthorized();
+
+            var appointments = await _context.Appointments
+                .Where(a => a.TeacherId == teacherId)
+                .Join(
+                    _context.Users,
+                    a => a.StudentId,
+                    u => u.Id,
+                    (a, student) => new
+                    {
+                        a.Id,
+                        a.AppointmentDate,
+                        a.StartTime,
+                        a.EndTime,
+                        a.Status,
+                        a.Reason,
+                        a.Notes,
+                        a.CreatedAt,
+                        StudentName = student.Name,
+                        StudentEmail = student.Email,
+                        student.SectionId
+                    }
+                )
+                .GroupJoin(
+                    _context.Sections,
+                    a => a.SectionId,
+                    s => s.Id,
+                    (a, sections) => new { a, sections }
+                )
+                .SelectMany(
+                    x => x.sections.DefaultIfEmpty(),
+                    (x, section) => new
+                    {
+                        x.a.Id,
+                        x.a.AppointmentDate,
+                        x.a.StartTime,
+                        x.a.EndTime,
+                        x.a.Status,
+                        x.a.Reason,
+                        x.a.Notes,
+                        x.a.CreatedAt,
+                        x.a.StudentName,
+                        x.a.StudentEmail,
+                        x.a.SectionId,
+                        SectionName = section != null ? section.Name : "N/A",
+                        GradeLevel = section != null && !string.IsNullOrWhiteSpace(section.GradeLevel) ? section.GradeLevel : "N/A"
+                    }
+                )
+                .OrderByDescending(a => a.AppointmentDate)
+                .ThenByDescending(a => a.StartTime)
+                .ToListAsync();
+
+            var result = appointments.Select(a =>
+            {
+                var nameParts = a.StudentName.Split(' ', 2);
+                return new
+                {
+                    a.Id,
+                    firstName = nameParts[0],
+                    lastName = nameParts.Length > 1 ? nameParts[1] : "",
+                    sectionId = a.SectionId,
+                    sectionName = a.SectionName,
+                    gradeLevel = a.GradeLevel,
                     appointmentDate = a.AppointmentDate.ToString("dd-MMM-yyyy"),
                     startTime = a.StartTime.ToString("h:mm tt"),
                     endTime = a.EndTime.ToString("h:mm tt"),

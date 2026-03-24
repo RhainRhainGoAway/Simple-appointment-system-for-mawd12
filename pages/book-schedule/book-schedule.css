@@ -6,6 +6,37 @@
     flex-direction: column;
 }
 
+/* ==================== SEARCH BAR (match Pending Requests) ==================== */
+.search-bar {
+    position: relative;
+    width: 260px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 10px 40px 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.search-bar input:focus {
+    border-color: #1570EF;
+}
+
+.search-bar i {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 18px;
+    pointer-events: none;
+}
+
 /* Time Slot Buttons */
 .time-slot {
     padding: 6px 12px;
@@ -162,4 +193,47 @@
     font-weight: 500;
     color: #1f2937;
     font-size: 14px;
+}
+
+/* ==================== PAGINATION (match Pending Requests) ==================== */
+.pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.page-btn:hover {
+    background: #f1f5f9;
+}
+
+.page-btn.active {
+    background: #1570EF;
+    color: white;
+    border-color: #1570EF;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }

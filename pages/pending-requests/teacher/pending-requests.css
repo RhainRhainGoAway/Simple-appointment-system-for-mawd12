@@ -8,7 +8,7 @@
 /* ==================== HEADER ROW ==================== */
 .header-row {
     display: flex;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: space-between;
     margin-bottom: 24px;
     flex-wrap: wrap;
@@ -70,6 +70,24 @@
 .pending-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Lock column widths so content changes don't shift layout */
+.pending-table thead th:nth-child(6) {
+    width: 220px; /* Status (Accept/Decline OR badge) */
+    text-align: center;
+}
+
+.pending-table thead th:nth-child(7) {
+    width: 90px; /* Action (eye icon) */
+    text-align: right;
+}
+
+.pending-table thead th,
+.pending-table tbody td {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pending-table thead th {
@@ -100,11 +118,78 @@
     vertical-align: middle;
 }
 
+/* ==================== STATUS BADGE ==================== */
+.status-badge {
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    min-width: 90px;
+    text-align: center;
+}
+
+.status-badge.pending {
+    background: #d1d5db;
+    color: #374151;
+}
+
+.status-badge.accepted {
+    background: #1570EF;
+    color: #ffffff;
+}
+
+.status-badge.cancelled {
+    background: #fdba74;
+    color: #9a3412;
+}
+
+/* Pending actions live in the Status column */
+.status-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+/* ==================== EMPTY ROW (TABLE) ==================== */
+.empty-row td {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+
+.empty-row i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.empty-row p {
+    font-size: 15px;
+    margin: 0;
+}
+
 /* ==================== ACTION BUTTONS ==================== */
 .action-buttons {
     display: flex;
     align-items: center;
     gap: 8px;
+    justify-content: flex-end;
+}
+
+/* Align status/action columns consistently */
+.status-cell {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-cell {
+    text-align: right;
 }
 
 .btn-accept {
@@ -358,6 +443,18 @@
         font-weight: 600;
         color: #1a1a2e;
         margin-right: 12px;
+    }
+
+    /* Center status content on mobile (label + badge/actions) */
+    .pending-table tbody td.status-cell {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pending-table tbody td.status-cell::before {
+        margin-right: 0;
     }
 
     .action-buttons {

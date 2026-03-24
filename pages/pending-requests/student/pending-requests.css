@@ -10,6 +10,51 @@
     margin-bottom: 24px;
 }
 
+.header-row .page-header {
+    margin-bottom: 0;
+}
+
+/* ==================== HEADER ROW (match teacher) ==================== */
+.header-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* ==================== SEARCH BAR (match teacher) ==================== */
+.search-bar {
+    position: relative;
+    width: 260px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 10px 40px 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.search-bar input:focus {
+    border-color: #1570EF;
+}
+
+.search-bar i {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 18px;
+    pointer-events: none;
+}
+
 .page-header h2 {
     font-weight: 700;
     color: #1a1a2e;

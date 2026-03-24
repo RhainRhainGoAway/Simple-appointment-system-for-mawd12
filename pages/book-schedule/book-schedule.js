@@ -18,8 +18,11 @@ const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 // Pagination state
 let allTeachers = [];
+let filteredTeachers = [];
 let currentPage = 1;
 const rowsPerPage = 4;
+
+const searchInput = document.getElementById('searchInput');
 
 function getMonday(date) {
     const d = new Date(date);
@@ -148,6 +151,8 @@ async function loadTeacherSchedules() {
                 Array.isArray(t.schedule)
                 && t.schedule.some(d => !d.closed && Array.isArray(d.slots) && d.slots.length > 0)
             );
+
+            applySearchFilter();
             currentPage = 1;
             renderTeacherTable();
         } else {
@@ -159,11 +164,23 @@ async function loadTeacherSchedules() {
     }
 }
 
+function applySearchFilter() {
+    const query = (searchInput?.value || '').toLowerCase().trim();
+    if (!query) {
+        filteredTeachers = [...allTeachers];
+        return;
+    }
+
+    filteredTeachers = (allTeachers || []).filter(t =>
+        String(t.teacherName || '').toLowerCase().includes(query)
+    );
+}
+
 function renderTeacherTable() {
     const tbody = document.getElementById('teacherScheduleBody');
-    const totalPages = Math.ceil(allTeachers.length / rowsPerPage);
+    const totalPages = Math.ceil(filteredTeachers.length / rowsPerPage);
     const start = (currentPage - 1) * rowsPerPage;
-    const pageTeachers = allTeachers.slice(start, start + rowsPerPage);
+    const pageTeachers = filteredTeachers.slice(start, start + rowsPerPage);
 
     if (pageTeachers.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No teacher schedules available</td></tr>';
@@ -243,20 +260,25 @@ function renderPagination(totalPages) {
         return;
     }
 
-    let html = '<ul class="pagination pagination-sm mb-0">';
-    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link rounded-circle border-0" href="#" onclick="changePage(${currentPage - 1}); return false;"><i class='bx bx-chevron-left'></i></a></li>`;
+    let html = '';
+
+    html += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                <i class='bx bx-chevron-left'></i>
+             </button>`;
 
     for (let i = 1; i <= totalPages; i++) {
-        html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link rounded-circle border-0 ${i === currentPage ? 'bg-primary' : ''}" href="#" onclick="changePage(${i}); return false;">${i}</a></li>`;
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
     }
 
-    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link rounded-circle border-0" href="#" onclick="changePage(${currentPage + 1}); return false;"><i class='bx bx-chevron-right'></i></a></li>`;
-    html += '</ul>';
+    html += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                <i class='bx bx-chevron-right'></i>
+             </button>`;
+
     container.innerHTML = html;
 }
 
 function changePage(page) {
-    const totalPages = Math.ceil(allTeachers.length / rowsPerPage);
+    const totalPages = Math.ceil(filteredTeachers.length / rowsPerPage);
     if (page < 1 || page > totalPages) return;
     currentPage = page;
     renderTeacherTable();
@@ -268,6 +290,14 @@ function changePage(page) {
 
 document.addEventListener('DOMContentLoaded', function() {
     updateDateRange();
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            applySearchFilter();
+            currentPage = 1;
+            renderTeacherTable();
+        });
+    }
 
     const todayBtn = document.querySelector('.btn-outline-secondary');
     if (todayBtn) {

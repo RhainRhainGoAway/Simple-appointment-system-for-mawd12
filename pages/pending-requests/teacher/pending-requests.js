@@ -10,6 +10,9 @@ let allRequests      = [];
 let filteredRequests = [];
 let currentPage      = 1;
 
+// Sections index (fallback for gradeLevel)
+let sectionsById = new Map();
+
 // ---------- DOM refs ----------
 const tableBody           = document.getElementById('pendingTableBody');
 const emptyState          = document.getElementById('emptyState');
@@ -22,7 +25,9 @@ const searchInput         = document.getElementById('searchInput');
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     if (!requireAuth(['teacher'])) return;
-    fetchPendingRequests();
+    loadSectionsIndex().finally(() => {
+        fetchRequests();
+    });
 
     // Search handler
     searchInput.addEventListener('input', () => {
@@ -30,21 +35,33 @@ document.addEventListener('DOMContentLoaded', () => {
         filteredRequests = allRequests.filter(row =>
             row.firstName.toLowerCase().includes(query) ||
             row.lastName.toLowerCase().includes(query) ||
-            row.sectionName.toLowerCase().includes(query)
+            row.sectionName.toLowerCase().includes(query) ||
+            (getGradeLevel(row) || '').toLowerCase().includes(query)
         );
         currentPage = 1;
         render();
     });
 });
 
+async function loadSectionsIndex() {
+    try {
+        const res = await apiCall('/sections');
+        if (!res || !res.ok) return;
+        const sections = await res.json();
+        sectionsById = new Map((sections || []).map(s => [s.id, s]));
+    } catch {
+        // ignore
+    }
+}
+
 // ============================================
-// Fetch pending requests from API
+// Fetch all requests (pending + history) from API
 // ============================================
-async function fetchPendingRequests() {
+async function fetchRequests() {
     showLoading(true);
 
     try {
-        const response = await apiCall('/appointments/teacher/pending');
+        const response = await apiCall('/appointments/teacher/all');
 
         if (!response || !response.ok) {
             throw new Error('Failed to fetch pending requests');
@@ -69,8 +86,15 @@ function render() {
     showLoading(false);
 
     if (filteredRequests.length === 0) {
-        tableBody.innerHTML = '';
-        emptyState.style.display = 'block';
+        emptyState.style.display = 'none';
+        tableBody.innerHTML = `
+            <tr class="empty-row">
+                <td colspan="7">
+                    <i class='bx bx-calendar-x'></i>
+                    <p>No pending requests found.</p>
+                </td>
+            </tr>
+        `;
         paginationContainer.innerHTML = '';
         return;
     }
@@ -90,11 +114,20 @@ function renderTable() {
             <td data-label="First Name">${escapeHtml(row.firstName)}</td>
             <td data-label="Last Name">${escapeHtml(row.lastName)}</td>
             <td data-label="Section">${escapeHtml(row.sectionName)}</td>
+            <td data-label="Grade Level">${escapeHtml(getGradeLevel(row) || '—')}</td>
             <td data-label="Date & Time">${row.appointmentDate} at ${row.startTime} - ${row.endTime}</td>
-            <td data-label="Action">
+            <td data-label="Status" class="status-cell">
+                ${row.status === 'pending' ? `
+                    <div class="status-actions">
+                        <button class="btn-accept" onclick="acceptRequest(${row.id})">Accept</button>
+                        <button class="btn-decline" onclick="declineRequest(${row.id})">Decline</button>
+                    </div>
+                ` : `
+                    <span class="status-badge ${row.status}">${escapeHtml(row.status)}</span>
+                `}
+            </td>
+            <td data-label="Action" class="action-cell">
                 <div class="action-buttons">
-                    <button class="btn-accept" onclick="acceptRequest(${row.id})">Accept</button>
-                    <button class="btn-decline" onclick="declineRequest(${row.id})">Decline</button>
                     <button class="btn-view" onclick="openDetailsModal(${row.id})" title="View details">
                         <i class='bx bx-show'></i>
                     </button>
@@ -102,6 +135,18 @@ function renderTable() {
             </td>
         </tr>
     `).join('');
+}
+
+function getGradeLevel(row) {
+    if (!row) return '';
+    if (row.gradeLevel && String(row.gradeLevel).trim() !== '') return row.gradeLevel;
+    if (row.grade_level && String(row.grade_level).trim() !== '') return row.grade_level;
+    if (row.sectionId != null) {
+        const section = sectionsById.get(row.sectionId);
+        if (section && section.gradeLevel) return section.gradeLevel;
+        if (section && section.grade_level) return section.grade_level;
+    }
+    return '';
 }
 
 // ---------- Pagination ----------
@@ -148,7 +193,11 @@ async function acceptRequest(id) {
             throw new Error('Failed to accept');
         }
 
-        fetchPendingRequests();
+        updateRequestStatus(id, 'accepted');
+        render();
+
+        // Best-effort refresh from server (keeps UI state if refresh fails)
+        fetchRequests().catch(() => {});
     } catch (error) {
         console.error('Error accepting appointment:', error);
         await appAlert('Failed to accept appointment. Please try again.', { title: 'Error', variant: 'danger' });
@@ -163,11 +212,25 @@ async function declineRequest(id) {
             throw new Error('Failed to decline');
         }
 
-        fetchPendingRequests();
+        updateRequestStatus(id, 'cancelled');
+        render();
+
+        // Best-effort refresh from server (keeps UI state if refresh fails)
+        fetchRequests().catch(() => {});
     } catch (error) {
         console.error('Error declining appointment:', error);
         await appAlert('Failed to decline appointment. Please try again.', { title: 'Error', variant: 'danger' });
     }
+}
+
+function updateRequestStatus(id, newStatus) {
+    const updateRow = (row) => {
+        if (row && row.id === id) row.status = newStatus;
+        return row;
+    };
+
+    allRequests = allRequests.map(updateRow);
+    filteredRequests = filteredRequests.map(updateRow);
 }
 
 // ============================================
@@ -179,7 +242,15 @@ function openDetailsModal(id) {
     const row = allRequests.find(r => r.id === id);
     if (!row) return;
 
-    modalTargetId = id;
+    const isPending = row.status === 'pending';
+    modalTargetId = isPending ? id : null;
+
+    const modalAcceptBtn = document.getElementById('modalAcceptBtn');
+    const modalDeclineBtn = document.getElementById('modalDeclineBtn');
+    const modalFooter = document.querySelector('#detailsModal .modal-footer');
+    modalAcceptBtn.style.display = isPending ? 'inline-block' : 'none';
+    modalDeclineBtn.style.display = isPending ? 'inline-block' : 'none';
+    if (modalFooter) modalFooter.style.display = isPending ? 'flex' : 'none';
 
     // Reason badges — show the reason field as a badge
     const badges = document.getElementById('reasonBadges');
