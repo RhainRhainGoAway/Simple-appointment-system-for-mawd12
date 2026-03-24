@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using AppointmentSystemAPI.Data;
 using AppointmentSystemAPI.Models;
+using System.Collections.Concurrent;
 
 namespace AppointmentSystemAPI.Controllers
 {
@@ -12,6 +13,10 @@ namespace AppointmentSystemAPI.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+
+        // Prevent accidental duplicate inserts under concurrency (e.g., double-clicking the Book button).
+        // This is a per-process lock; for full multi-instance safety, add a DB unique constraint.
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> SlotLocks = new();
 
         public AppointmentsController(ApplicationDbContext context)
         {
@@ -224,6 +229,40 @@ namespace AppointmentSystemAPI.Controllers
             if (endTime <= startTime)
                 return BadRequest(new { message = "End time must be after start time" });
 
+            // Lock by (student, date, start, end) so a single student can't create duplicates concurrently.
+            var lockKey = $"{studentId}|{appointmentDate:yyyy-MM-dd}|{startTime:HH:mm:ss}|{endTime:HH:mm:ss}";
+            var slotLock = SlotLocks.GetOrAdd(lockKey, _ => new SemaphoreSlim(1, 1));
+            await slotLock.WaitAsync(HttpContext.RequestAborted);
+            try
+            {
+
+            // Prevent duplicate bookings for the exact same slot by the same student.
+            // A student may book again only after the existing request is cancelled/declined.
+            var hasDuplicateForStudent = await _context.Appointments.AnyAsync(a =>
+                a.StudentId == studentId
+                && a.AppointmentDate == appointmentDate
+                && a.StartTime == startTime
+                && a.EndTime == endTime
+                && (a.Status == "pending" || a.Status == "accepted")
+            );
+
+            if (hasDuplicateForStudent)
+                return BadRequest(new { message = "You already requested this exact time slot. Cancel your existing request before booking again." });
+
+            // Also block any overlapping booking for the student on the same day.
+            // This prevents a student from booking multiple appointments that overlap in time,
+            // regardless of which teacher they're booking with.
+            var hasOverlapForStudent = await _context.Appointments.AnyAsync(a =>
+                a.StudentId == studentId
+                && a.AppointmentDate == appointmentDate
+                && (a.Status == "pending" || a.Status == "accepted")
+                && a.StartTime < endTime
+                && a.EndTime > startTime
+            );
+
+            if (hasOverlapForStudent)
+                return BadRequest(new { message = "You already have a request that overlaps this time. Cancel it before booking again." });
+
             // Prevent booking a consultation during the student's class schedule.
             // Do not rely on exact role string casing/format; SectionId is the source of truth.
             var student = await _context.Users.FirstOrDefaultAsync(u => u.Id == studentId);
@@ -253,8 +292,10 @@ namespace AppointmentSystemAPI.Controllers
                     return BadRequest(new { message = "You cannot book when you have a class at that time." });
             }
 
-            // Check for overlapping ACCEPTED appointments only — multiple pending bookings are allowed
-            var hasConflict = await _context.Appointments.AnyAsync(a =>
+            // Teacher availability rule:
+            // - Allow multiple students to REQUEST (pending) the same slot.
+            // - Prevent overlapping ACCEPTED appointments (teacher can't have two meetings at once).
+            var hasAcceptedConflict = await _context.Appointments.AnyAsync(a =>
                 a.TeacherId == dto.TeacherId
                 && a.AppointmentDate == appointmentDate
                 && a.Status == "accepted"
@@ -262,7 +303,7 @@ namespace AppointmentSystemAPI.Controllers
                 && a.EndTime > startTime
             );
 
-            if (hasConflict)
+            if (hasAcceptedConflict)
                 return BadRequest(new { message = "This time slot is no longer available. Please choose another." });
 
             var appointment = new Appointment
@@ -284,6 +325,11 @@ namespace AppointmentSystemAPI.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Appointment created successfully", id = appointment.Id });
+            }
+            finally
+            {
+                slotLock.Release();
+            }
         }
 
         // ============================================
@@ -484,6 +530,19 @@ namespace AppointmentSystemAPI.Controllers
 
             if (appointment.Status != "pending")
                 return BadRequest(new { message = "Only pending appointments can be accepted" });
+
+            // Safety check: do not accept if another accepted appointment already occupies this slot.
+            var hasAcceptedConflict = await _context.Appointments.AnyAsync(a =>
+                a.Id != appointment.Id
+                && a.TeacherId == teacherId
+                && a.AppointmentDate == appointment.AppointmentDate
+                && a.Status == "accepted"
+                && a.StartTime < appointment.EndTime
+                && a.EndTime > appointment.StartTime
+            );
+
+            if (hasAcceptedConflict)
+                return BadRequest(new { message = "This time slot is already occupied by another accepted appointment." });
 
             appointment.Status = "accepted";
             appointment.UpdatedAt = DateTime.Now;

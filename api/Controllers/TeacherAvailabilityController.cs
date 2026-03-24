@@ -24,6 +24,22 @@ namespace AppointmentSystemAPI.Controllers
             return claim != null ? int.Parse(claim) : 0;
         }
 
+        private static DateOnly GetActiveWeekStart(DateOnly today)
+        {
+            // Active week is the week we allow booking for.
+            // Mon-Thu => current week's Monday
+            // Fri/Sat/Sun => next week's Monday
+            var dow = today.DayOfWeek;
+
+            if (dow == DayOfWeek.Saturday) return today.AddDays(2);
+            if (dow == DayOfWeek.Sunday) return today.AddDays(1);
+            if (dow == DayOfWeek.Friday) return today.AddDays(3);
+
+            // Monday = 1 ... Thursday = 4
+            var daysSinceMonday = ((int)dow - (int)DayOfWeek.Monday);
+            return today.AddDays(-daysSinceMonday);
+        }
+
         // GET: api/teacheravailability/my
         // Get the current teacher's own schedule (for edit-schedule page)
         [HttpGet("my")]
@@ -175,6 +191,12 @@ namespace AppointmentSystemAPI.Controllers
             if (!DateOnly.TryParse(start, out var weekStart))
                 return BadRequest(new { message = "Invalid start date" });
 
+            // Weekly schedule (day-of-week) should only apply to the current "active" week,
+            // otherwise it repeats forever.
+            // Date-specific overrides are allowed for any requested week.
+            var activeWeekStart = GetActiveWeekStart(DateOnly.FromDateTime(DateTime.Now));
+            var includeWeeklySchedule = weekStart == activeWeekStart;
+
             // Get all teachers with their availability
             var teachers = await _context.Users
                 .Where(u => u.Role == "teacher")
@@ -252,12 +274,14 @@ namespace AppointmentSystemAPI.Controllers
                     }
                     else
                     {
-                        // Use weekly schedule
-                        var rawSlots = teacherAvail
-                            .Where(a => a.DayOfWeek == dayName)
-                            .Select(a => (start: a.StartTime, end: a.EndTime))
-                            .Where(s => s.end > s.start)
-                            .ToList();
+                        // Use weekly schedule only for the active week
+                        var rawSlots = includeWeeklySchedule
+                            ? teacherAvail
+                                .Where(a => a.DayOfWeek == dayName)
+                                .Select(a => (start: a.StartTime, end: a.EndTime))
+                                .Where(s => s.end > s.start)
+                                .ToList()
+                            : new List<(TimeOnly start, TimeOnly end)>();
 
                         // Subtract booked slots
                         var availableSlots = new List<SlotDto>();

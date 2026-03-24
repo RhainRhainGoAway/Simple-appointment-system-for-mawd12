@@ -78,9 +78,16 @@ function renderTable() {
                 <span class="status-badge ${row.status}">${row.status}</span>
             </td>
             <td>
-                <button class="btn-view" onclick="openDetailsModal(${row.id})" title="View details">
-                    <i class='bx bx-show'></i>
-                </button>
+                <div class="action-buttons">
+                    ${row.status === 'pending' ? `
+                        <button class="btn-cancel" onclick="cancelRequest(${row.id})" title="Cancel request">
+                            <i class='bx bx-x-circle'></i>
+                        </button>
+                    ` : ''}
+                    <button class="btn-view" onclick="openDetailsModal(${row.id})" title="View details">
+                        <i class='bx bx-show'></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');
@@ -159,10 +166,59 @@ function openDetailsModal(id) {
             <span class="detail-label">Requested On</span>
             <span class="detail-value">${row.createdAt}</span>
         </div>
+        ${row.status === 'pending' ? `
+        <div class="detail-row">
+            <span class="detail-label">Action</span>
+            <span class="detail-value">
+                <button class="btn btn-outline-danger btn-sm" onclick="cancelRequest(${row.id})">Cancel request</button>
+            </span>
+        </div>
+        ` : ''}
     `;
 
     const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
     modal.show();
+}
+
+// ============================================
+// Cancel pending request
+// ============================================
+async function cancelRequest(id) {
+    const row = allRequests.find(r => r.id === id);
+    if (!row) return;
+
+    if (row.status !== 'pending') {
+        await appAlert('Only pending requests can be cancelled.', { title: 'Notice', variant: 'primary' });
+        return;
+    }
+
+    const ok = await appConfirm('Cancel this consultation request?', { title: 'Cancel request', variant: 'danger', okText: 'Cancel request', cancelText: 'Keep it' });
+    if (!ok) return;
+
+    try {
+        const response = await apiCall(`/appointments/${id}/cancel`, { method: 'DELETE' });
+
+        if (!response || !response.ok) {
+            let message = 'Failed to cancel request.';
+            try {
+                const data = await response.json();
+                if (data && data.message) message = data.message;
+            } catch {
+                // ignore
+            }
+            throw new Error(message);
+        }
+
+        // Close details modal if it is open
+        const modalEl = document.getElementById('detailsModal');
+        const modalInstance = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+        if (modalInstance) modalInstance.hide();
+
+        await fetchRequests();
+    } catch (error) {
+        console.error('Error cancelling request:', error);
+        await appAlert(error.message || 'Failed to cancel request. Please try again.', { title: 'Error', variant: 'danger' });
+    }
 }
 
 // ============================================

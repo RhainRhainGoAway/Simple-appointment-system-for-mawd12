@@ -211,7 +211,7 @@
     height: 100vh;
     background: #f8f9fa;
     padding: 24px 12px;
-    overflow-y: auto;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
     gap: 12px;

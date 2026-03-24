@@ -139,7 +139,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         const data = await response.json();
 
         if (response.ok) {
-            alert('Registration successful! Please login.');
+            await appAlert('Registration successful! Please login.', { title: 'Success' });
             form.reset();
             // Hide student fields after reset
             document.getElementById('studentFields').style.display = 'none';

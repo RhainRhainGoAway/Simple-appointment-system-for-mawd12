@@ -31,6 +31,39 @@ let scheduleState = {
 };
 
 // ============================================
+// TIME OPTION HELPERS
+// ============================================
+
+function normalizeTimeStr(value) {
+    if (value == null) return '00:00';
+    const str = String(value).trim();
+    if (str === '') return '00:00';
+    const parts = str.split(':');
+    if (parts.length !== 2) return str;
+
+    const hour = Number(parts[0]);
+    const minute = Number(parts[1]);
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return str;
+
+    const hh = String(hour).padStart(2, '0');
+    const mm = String(minute).padStart(2, '0');
+    return `${hh}:${mm}`;
+}
+
+function buildHourOptions(selectedValue) {
+    const selected = normalizeTimeStr(selectedValue);
+    const options = [{ value: '00:00', label: '—' }];
+    for (let hour = 1; hour <= 12; hour++) {
+        const value = `${String(hour).padStart(2, '0')}:00`;
+        options.push({ value, label: `${hour}:00` });
+    }
+
+    return options
+        .map(o => `<option value="${o.value}" ${o.value === selected ? 'selected' : ''}>${o.label}</option>`)
+        .join('');
+}
+
+// ============================================
 // CALENDAR STATE OBJECT
 // ============================================
 
@@ -165,9 +198,9 @@ function renderTimeSlots(day) {
                     <i class='bx ${slot.isPreferred ? 'bxs-star' : 'bx-star'}'></i>
                 </button>
                 <div class="time-input-group">
-                    <input type="text" class="time-input" value="${slot.startTime}" 
-                           onchange="updateSlotTime('${day}', ${slot.id}, 'startTime', this.value)" 
-                           placeholder="09:00">
+                    <select class="time-select" onchange="updateSlotTime('${day}', ${slot.id}, 'startTime', this.value)" aria-label="Start time">
+                        ${buildHourOptions(slot.startTime)}
+                    </select>
                     <select class="period-select" onchange="updateSlotTime('${day}', ${slot.id}, 'startPeriod', this.value)">
                         <option value="AM" ${slot.startPeriod === 'AM' ? 'selected' : ''}>AM</option>
                         <option value="PM" ${slot.startPeriod === 'PM' ? 'selected' : ''}>PM</option>
@@ -175,9 +208,9 @@ function renderTimeSlots(day) {
                 </div>
                 <span class="time-separator">—</span>
                 <div class="time-input-group">
-                    <input type="text" class="time-input" value="${slot.endTime}" 
-                           onchange="updateSlotTime('${day}', ${slot.id}, 'endTime', this.value)" 
-                           placeholder="10:00">
+                    <select class="time-select" onchange="updateSlotTime('${day}', ${slot.id}, 'endTime', this.value)" aria-label="End time">
+                        ${buildHourOptions(slot.endTime)}
+                    </select>
                     <select class="period-select" onchange="updateSlotTime('${day}', ${slot.id}, 'endPeriod', this.value)">
                         <option value="AM" ${slot.endPeriod === 'AM' ? 'selected' : ''}>AM</option>
                         <option value="PM" ${slot.endPeriod === 'PM' ? 'selected' : ''}>PM</option>
@@ -430,13 +463,17 @@ function addSpecificTimeSlotRow() {
     // HTML template para sa time slot row
     const rowHtml = `
         <div class="specific-time-row" data-row-id="${rowId}">
-            <input type="text" class="time-input" placeholder="00:00" value="00:00">
+            <select class="time-select" aria-label="Start time">
+                ${buildHourOptions('00:00')}
+            </select>
             <select class="period-select">
                 <option value="AM">AM</option>
                 <option value="PM">PM</option>
             </select>
             <span class="time-separator">—</span>
-            <input type="text" class="time-input" placeholder="00:00" value="00:00">
+            <select class="time-select" aria-label="End time">
+                ${buildHourOptions('00:00')}
+            </select>
             <select class="period-select">
                 <option value="AM">AM</option>
                 <option value="PM">PM</option>
@@ -470,16 +507,16 @@ function removeSpecificTimeRow(rowId) {
  * Called when user clicks Accept button sa modal
  * Stores to scheduleState.specificDates array
  */
-function saveSpecificDate() {
+async function saveSpecificDate() {
     // Validation - must have selected date
     if (!calendarState.selectedDate) {
-        alert('Please select a date');
+        await appAlert('Please select a date', { title: 'Notice' });
         return;
     }
 
     // Block Saturdays
     if (calendarState.selectedDate.getDay() === 6) {
-        alert('Saturday is not available. Please choose another date.');
+        await appAlert('Saturday is not available. Please choose another date.', { title: 'Notice' });
         return;
     }
     
@@ -490,7 +527,7 @@ function saveSpecificDate() {
     // Kung hindi closed, collect yung time slots
     if (!isClosed) {
         timeRows.forEach(row => {
-            const inputs = row.querySelectorAll('.time-input');
+            const inputs = row.querySelectorAll('.time-select');
             const selects = row.querySelectorAll('.period-select');
             const startTime = inputs[0].value;
             const endTime = inputs[1].value;

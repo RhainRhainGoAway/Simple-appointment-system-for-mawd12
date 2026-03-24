@@ -71,8 +71,10 @@ function requireAuth(allowedRoles = []) {
     if (allowedRoles.length > 0) {
         const userRole = localStorage.getItem('userRole');
         if (!allowedRoles.includes(userRole)) {
-            alert('Access denied! You do not have permission to view this page.');
-            window.location.href = '/auth/login.html';
+            appAlert('Access denied! You do not have permission to view this page.', { title: 'Access denied', variant: 'danger' })
+                .finally(() => {
+                    window.location.href = '/auth/login.html';
+                });
             return false;
         }
     }
@@ -95,13 +97,13 @@ function loadProfileButtonData() {
     // Update profile button avatar
     const profileBtnAvatar = document.getElementById('profileBtnAvatar');
     if (profileBtnAvatar) {
-        profileBtnAvatar.src = profilePicture || '/appointment_system/assets/default-avatar.png';
+        profileBtnAvatar.src = profilePicture || '/appointment_system/assets/logo-0.png';
     }
     
     // Update profile menu avatar
     const profileMenuAvatar = document.getElementById('profileMenuAvatar');
     if (profileMenuAvatar) {
-        profileMenuAvatar.src = profilePicture || '/appointment_system/assets/default-avatar.png';
+        profileMenuAvatar.src = profilePicture || '/appointment_system/assets/logo-0.png';
     }
     
     // Update profile button name

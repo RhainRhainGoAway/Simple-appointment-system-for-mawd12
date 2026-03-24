@@ -92,6 +92,13 @@
 }
 
 /* ==================== VIEW BUTTON ==================== */
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 .btn-view {
     background: none;
     border: none;
@@ -109,6 +116,25 @@
 .btn-view:hover {
     background: #f1f5f9;
     color: #1a1a2e;
+}
+
+/* ==================== CANCEL BUTTON ==================== */
+.btn-cancel {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: #f1f5f9;
 }
 
 /* ==================== EMPTY & LOADING STATES ==================== */

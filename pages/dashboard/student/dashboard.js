@@ -93,7 +93,7 @@ async function loadTeachers() {
             container.innerHTML = shownTeachers.map(t => `
                 <div class="teacher-item">
                     <div class="teacher-info">
-                        <img src="${t.profilePicture || '/appointment_system/assets/default-avatar.png'}" alt="Teacher">
+                        <img src="${t.profilePicture || '/appointment_system/assets/logo-0.png'}" alt="Teacher">
                         <span>${escapeHtml(t.name)}</span>
                     </div>
                     <button class="request-btn" onclick="window.location.href='/appointment_system/pages/book-schedule/book-schedule.html'">Request</button>
@@ -134,7 +134,7 @@ async function loadHistory(teacherCount = 0) {
                 <tr>
                     <td>
                         <div class="history-item">
-                            <img src="${h.teacherProfilePicture || '/appointment_system/assets/default-avatar.png'}" alt="">
+                            <img src="${h.teacherProfilePicture || '/appointment_system/assets/logo-0.png'}" alt="">
                             <span>${escapeHtml(h.teacherName)}</span>
                         </div>
                     </td>

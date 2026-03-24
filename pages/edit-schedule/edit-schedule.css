@@ -103,16 +103,18 @@
     gap: 8px;
 }
 
-.time-input {
+.time-select {
     width: 75px;
     padding: 8px 10px;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     font-size: 14px;
     text-align: center;
+    background: #fff;
+    cursor: pointer;
 }
 
-.time-input:focus {
+.time-select:focus {
     outline: none;
     border-color: #2563eb;
 }
@@ -360,7 +362,7 @@
     gap: 8px;
 }
 
-.specific-time-row .time-input {
+.specific-time-row .time-select {
     width: 70px;
 }
 
@@ -406,7 +408,7 @@
         width: 100%;
     }
     
-    .time-input {
+    .time-select {
         width: 65px;
     }
     

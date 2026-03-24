@@ -27,6 +27,9 @@ function getMonday(date) {
     if (day === 0) {
         // Sunday -> next Monday
         d.setDate(d.getDate() + 1);
+    } else if (day === 5) {
+        // Friday -> next Monday (book for next week)
+        d.setDate(d.getDate() + 3);
     } else if (day === 6) {
         // Saturday -> next Monday
         d.setDate(d.getDate() + 2);
@@ -194,7 +197,7 @@ function renderTeacherTable() {
             <tr>
                 <td>
                     <div class="teacher-info">
-                        <img src="${teacher.teacherProfilePicture || '../../assets/default-avatar.png'}" alt="Teacher" class="teacher-avatar">
+                        <img src="${teacher.teacherProfilePicture || '../../assets/logo-0.png'}" alt="Teacher" class="teacher-avatar">
                         <div>
                             <p class="teacher-name">${escapeHtml(teacher.teacherName)}</p>
                         </div>
@@ -213,7 +216,7 @@ function renderTeacherTable() {
 
             const bookDateStr = this.dataset.bookDate;
             if (!bookDateStr) {
-                alert('Unable to determine the selected date. Please refresh and try again.');
+                appAlert('Unable to determine the selected date. Please refresh and try again.', { title: 'Error', variant: 'danger' });
                 return;
             }
 

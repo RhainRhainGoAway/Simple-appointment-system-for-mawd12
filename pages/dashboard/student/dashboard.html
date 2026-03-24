@@ -8,6 +8,7 @@
     <!--CSS-->
     <link rel="stylesheet" href="../../../shared/css/sidebar.css">
     <link rel="stylesheet" href="./dashboard.css">
+    <link rel="stylesheet" href="../../../shared/css/alerts.css">
     <link rel="stylesheet" href="../../../components/modals/profile.css">
 
     <!--Bootstrap 5 CSS-->
@@ -35,7 +36,7 @@
             <!-- Profile Dropdown -->
             <div class="profile-dropdown">
                 <div class="profile-btn" onclick="toggleProfileMenu()">
-                    <img src="../../../assets/default-avatar.png" alt="Profile" id="profileBtnAvatar">
+                    <img src="../../../assets/logo-0.png" alt="Profile" id="profileBtnAvatar">
                     <div class="profile-info">
                         <p class="name" id="profileBtnName">Loading...</p>
                         <p class="student-id" id="profileBtnStudentId">Loading...</p>
@@ -44,7 +45,7 @@
                 </div>
                 <div class="profile-menu" id="profileMenu">
                     <div class="profile-menu-header">
-                        <img src="../../../assets/default-avatar.png" alt="Profile" id="profileMenuAvatar">
+                        <img src="../../../assets/logo-0.png" alt="Profile" id="profileMenuAvatar">
                         <div>
                             <p class="name" id="profileMenuName">Loading...</p>
                             <p class="email" id="profileMenuEmail">Loading...</p>
@@ -147,6 +148,7 @@
     <!-- Profile Modal Container -->
     <div id="profile-modal-container"></div>
 
+    <script src="/appointment_system/shared/js/alerts.js"></script>
     <script src="/appointment_system/shared/js/api.js"></script>
     <script src="/appointment_system/shared/js/load-sidebar-student.js"></script>
 

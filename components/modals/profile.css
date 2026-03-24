@@ -152,6 +152,9 @@
     outline: none;
     flex: 1;
     margin-left: 20px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
 }
 
 .profile-field input:focus {

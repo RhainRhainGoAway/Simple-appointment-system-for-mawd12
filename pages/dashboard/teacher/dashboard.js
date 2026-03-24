@@ -90,7 +90,7 @@ async function loadPendingStudents() {
             container.innerHTML = students.map(s => `
                 <div class="teacher-item">
                     <div class="teacher-info">
-                        <img src="${s.profilePicture || '/appointment_system/assets/default-avatar.png'}" alt="Student">
+                        <img src="${s.profilePicture || '/appointment_system/assets/logo-0.png'}" alt="Student">
                         <span>${escapeHtml(s.name)}</span>
                     </div>
                     <button class="request-btn" onclick="window.location.href='/appointment_system/pages/pending-requests/teacher/pending-requests.html'">View</button>
@@ -125,7 +125,7 @@ async function loadHistory() {
                 <tr>
                     <td>
                         <div class="history-item">
-                            <img src="${h.studentProfilePicture || '/appointment_system/assets/default-avatar.png'}" alt="">
+                            <img src="${h.studentProfilePicture || '/appointment_system/assets/logo-0.png'}" alt="">
                             <span>${escapeHtml(h.studentName)}</span>
                         </div>
                     </td>

@@ -38,7 +38,7 @@ function loadProfileData() {
     // Update profile avatar
     const profileAvatar = document.getElementById('profileAvatar');
     if (profileAvatar) {
-        profileAvatar.src = profilePicture || '/assets/default-avatar.png';
+        profileAvatar.src = profilePicture || '/appointment_system/assets/logo-0.png';
     }
     
     // Update form fields
@@ -76,13 +76,13 @@ async function handleProfilePictureChange(event) {
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
-        alert('Please select an image file.');
+        await appAlert('Please select an image file.', { title: 'Invalid file', variant: 'danger' });
         return;
     }
     
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-        alert('Image size must be less than 2MB.');
+        await appAlert('Image size must be less than 2MB.', { title: 'Too large', variant: 'danger' });
         return;
     }
     
@@ -129,15 +129,15 @@ async function uploadProfilePicture(base64Image) {
             
             // Update all profile images on the page
             updateAllProfileImages(base64Image);
-            
-            alert('Profile picture updated successfully!');
+
+            await appAlert('Profile picture updated successfully!', { title: 'Success' });
         } else {
             const errorData = await response.json();
-            alert(errorData.message || 'Failed to update profile picture.');
+            await appAlert(errorData.message || 'Failed to update profile picture.', { title: 'Error', variant: 'danger' });
         }
     } catch (error) {
         console.error('Error uploading profile picture:', error);
-        alert('Connection error. Please try again.');
+        await appAlert('Connection error. Please try again.', { title: 'Connection error', variant: 'danger' });
     }
 }
 

@@ -323,12 +323,12 @@ async function confirmBooking() {
     bookingState.notes = document.getElementById('bookingNotes').value.trim();
 
     if (!bookingState.selectedSlot) {
-        alert('Please select a time slot.');
+        await appAlert('Please select a time slot.', { title: 'Notice' });
         return;
     }
 
     if (!bookingState.reason) {
-        alert('Please select a reason for consultation.');
+        await appAlert('Please select a reason for consultation.', { title: 'Notice' });
         return;
     }
 
@@ -354,7 +354,7 @@ async function confirmBooking() {
         });
 
         if (response && response.ok) {
-            alert('Booking confirmed! Your consultation request has been sent.');
+            await appAlert('Booking confirmed! Your consultation request has been sent.', { title: 'Success' });
             const modal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
             modal.hide();
 
@@ -384,7 +384,7 @@ function showBookingError(message) {
 
     const modalEl = document.getElementById('bookingErrorModal');
     if (!modalEl || typeof bootstrap === 'undefined') {
-        alert(message || 'Unable to book.');
+        appAlert(message || 'Unable to book.', { title: 'Unable to book', variant: 'danger' });
         return;
     }
 

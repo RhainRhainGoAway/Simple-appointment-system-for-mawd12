@@ -151,7 +151,7 @@ async function acceptRequest(id) {
         fetchPendingRequests();
     } catch (error) {
         console.error('Error accepting appointment:', error);
-        alert('Failed to accept appointment. Please try again.');
+        await appAlert('Failed to accept appointment. Please try again.', { title: 'Error', variant: 'danger' });
     }
 }
 
@@ -166,7 +166,7 @@ async function declineRequest(id) {
         fetchPendingRequests();
     } catch (error) {
         console.error('Error declining appointment:', error);
-        alert('Failed to decline appointment. Please try again.');
+        await appAlert('Failed to decline appointment. Please try again.', { title: 'Error', variant: 'danger' });
     }
 }
 
