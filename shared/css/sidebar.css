@@ -31,6 +31,21 @@ body {
     transition: var(--trans-05);
 }
 
+/* ==================== PROFILE DROPDOWN ==================== */
+.profile-menu-item.logout-item {
+    color: var(--bs-danger, #dc3545);
+}
+
+.profile-menu-item.logout-item i {
+    color: inherit;
+}
+
+/* ==================== PAGE HEADER SUBTITLE ==================== */
+.page-subtitle {
+    font-size: 16px;
+    line-height: 1.4;
+}
+
 
 /* ==================== SIDEBAR ==================== */
 .sidebar {
@@ -41,36 +56,59 @@ body {
     width: var(--sidebar-open-width);
     padding: 10px 14px;
     background: var(--sidebar-color);
-    transition: var(--trans-05);
+    transition: width 0.5s ease;
+    overflow: visible;
     z-index: 100;
 }
 
 .sidebar.close {
     width: var(--sidebar-collapsed-width);
-    padding-left: 6px;
-    padding-right: 6px;
+}
+
+/*
+  Two-phase collapse:
+  - `.sidebar.close` shrinks the sidebar + hides text (no horizontal re-layout).
+  - `.sidebar.close.is-collapsed` applies centered 50x50 tiles AFTER width transition.
+*/
+
+/* Collapsed (final): center header + tiles */
+.sidebar.close.is-collapsed header .image-text {
+    justify-content: center;
+}
+
+.sidebar.close.is-collapsed .image {
+    min-width: 100%;
+    padding-left: 0;
+    justify-content: center;
+}
+
+.sidebar.close.is-collapsed li {
+    justify-content: center;
 }
 
 .sidebar.close .text {
     opacity: 0;
-    width: 0;
-    visibility: hidden;
     pointer-events: none;
 }
 
 .sidebar .text{
     font-size: 15.5px;
     font-weight: 500;
-    transition: var(--trans-04);
     white-space: nowrap;
     opacity: 1;
+    overflow: hidden;
+    max-width: 220px;
+    display: inline-block;
+    transition: opacity 0.2s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .sidebar .image {
-    min-width: 60px;
+    min-width: 56px;
     display: flex;
     align-items: center;
-    padding-left: 5px;
+    padding-left: 6px;
 }
 
 .sidebar .image-text img {
@@ -123,22 +161,25 @@ header .image-text .header-text {
 .sidebar li .icon {
     display: flex;
     align-items: center;
-    justify-content: center;
-    min-width: 50px;
+    justify-content: flex-start;
+    min-width: 56px;
+    padding-left: 3px;
     font-size: 20px; 
+    position: relative;
+    z-index: 1;
 }
 
 .sidebar li .icon, 
 .sidebar li .text {
     color: var(--text-color);
-    transition: var(--trans-02);
+    transition: color 0.2s ease;
 }
 
 .sidebar header .toggle {
     position: absolute;
-    top: 50%;
+    top: 18px;
     right: -25px;
-    transform: translateY(-50%) rotate(180deg);
+    transform: rotate(180deg);
     height: 25px;
     width: 25px;
     background: var(--primary-color);
@@ -149,10 +190,11 @@ header .image-text .header-text {
     color: var(--sidebar-color);
     font-size: 22px; 
     transition: var(--trans-05);
+    z-index: 200;
 }
 
 .sidebar.close header .toggle {
-    transform: translateY(-50%);
+    transform: rotate(0deg);
 }
 
 .sidebar li a {
@@ -161,47 +203,37 @@ header .image-text .header-text {
     display: flex;
     align-items: center;
     text-decoration: none !important;
-    transition: var(--trans-04);
+    transition: background-color 0.2s ease, color 0.2s ease;
     border-radius: 6px;
     color: var(--text-color);
-    margin-left: -12px;
-}
-
-/* Narrower width when sidebar is closed */
-.sidebar.close li a {
-    width: 56px;
-    height: 56px;
-    margin-left: 0;
-    justify-content: center;
-    margin-right: auto;
-    margin-left: auto;
-    border-radius: 12px;
-}
-
-.sidebar.close li a:hover {
-    width: 56px;
-    height: 56px;
-}
-
-.sidebar.close li .icon {
-    min-width: 56px;
-}
-
-.sidebar.close .image {
-    min-width: 100%;
+    margin-left: 3px;
+    margin-right: 6px;
     padding-left: 0;
-    justify-content: center;
 }
 
-.sidebar.close header .image-text {
+/* Keep inner alignment stable while only the sidebar width changes */
+.sidebar.close.is-collapsed li a {
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    border-radius: 6px;
+}
+
+/* Center icon inside the 50x50 collapsed tile */
+.sidebar.close.is-collapsed li .icon {
+    width: 50px;
+    min-width: 50px;
+    padding-left: 0;
     justify-content: center;
 }
 
 .sidebar li a:hover {
     background: var(--primary-color);
-    border-radius: 6px;
-    height: 50px;
 }
+
 
 .sidebar li a:hover .icon,
 .sidebar li a:hover .text {
@@ -214,6 +246,7 @@ header .image-text .header-text {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    overflow: hidden;
 }
 
 .home {

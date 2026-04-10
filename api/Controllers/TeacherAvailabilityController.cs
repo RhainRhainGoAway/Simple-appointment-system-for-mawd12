@@ -13,6 +13,8 @@ namespace AppointmentSystemAPI.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+        private const int GraceMinutesAfterAppointment = 5;
+
         public TeacherAvailabilityController(ApplicationDbContext context)
         {
             _context = context;
@@ -234,7 +236,7 @@ namespace AppointmentSystemAPI.Controllers
                     // Get booked slots for this teacher on this date
                     var dayBookings = teacherBookings
                         .Where(a => a.AppointmentDate == currentDate)
-                        .Select(a => (start: a.StartTime, end: a.EndTime))
+                        .Select(a => (start: a.StartTime, end: AddMinutesClamped(a.EndTime, GraceMinutesAfterAppointment)))
                         .ToList();
 
                     // Check for date-specific override first
@@ -245,7 +247,7 @@ namespace AppointmentSystemAPI.Controllers
                     {
                         if (dateOverrides.First().IsClosed)
                         {
-                            days.Add(new DayAvailabilityDto { Closed = true, Slots = new List<SlotDto>() });
+                            days.Add(new DayAvailabilityDto { Closed = true, FullyBooked = false, Slots = new List<SlotDto>() });
                         }
                         else
                         {
@@ -269,7 +271,9 @@ namespace AppointmentSystemAPI.Controllers
                                     }));
                             }
 
-                            days.Add(new DayAvailabilityDto { Closed = availableSlots.Count == 0, Slots = availableSlots });
+                            var fullyBooked = rawSlots.Count > 0 && availableSlots.Count == 0;
+                            var closed = rawSlots.Count == 0;
+                            days.Add(new DayAvailabilityDto { Closed = closed, FullyBooked = fullyBooked, Slots = availableSlots });
                         }
                     }
                     else
@@ -297,7 +301,9 @@ namespace AppointmentSystemAPI.Controllers
                                 }));
                         }
 
-                        days.Add(new DayAvailabilityDto { Closed = availableSlots.Count == 0, Slots = availableSlots });
+                        var fullyBooked = rawSlots.Count > 0 && availableSlots.Count == 0;
+                        var closed = rawSlots.Count == 0;
+                        days.Add(new DayAvailabilityDto { Closed = closed, FullyBooked = fullyBooked, Slots = availableSlots });
                     }
                 }
 
@@ -313,6 +319,19 @@ namespace AppointmentSystemAPI.Controllers
             .ToList();
 
             return Ok(result);
+        }
+
+        private static TimeOnly AddMinutesClamped(TimeOnly time, int minutes)
+        {
+            if (minutes == 0) return time;
+
+            var added = time.Add(TimeSpan.FromMinutes(minutes));
+
+            // TimeOnly.Add wraps around past midnight; clamp instead.
+            if (minutes > 0 && added < time) return new TimeOnly(23, 59);
+            if (minutes < 0 && added > time) return new TimeOnly(0, 0);
+
+            return added;
         }
 
         /// <summary>
@@ -367,6 +386,7 @@ namespace AppointmentSystemAPI.Controllers
         private sealed class DayAvailabilityDto
         {
             public bool Closed { get; set; }
+            public bool FullyBooked { get; set; }
             public List<SlotDto> Slots { get; set; } = new();
         }
 

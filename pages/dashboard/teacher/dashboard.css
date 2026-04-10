@@ -31,6 +31,11 @@
     border-radius: 50%;
     object-fit: cover;
 }
+.profile-btn .dropdown-icon {
+    font-size: 18px;
+    color: #6c757d;
+    margin-left: 4px;
+}
 .profile-info {
     text-align: left;
 }
@@ -222,16 +227,71 @@
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
-.sidebar-card.available-teachers {
+.sidebar-card.notifications {
     flex-shrink: 0;
     margin-top: 10px;
+    max-height: 280px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
+
+/* Make pending requests + history panels scrollable within the fixed right sidebar */
+.sidebar-card.available-teachers,
+.sidebar-card.consultation-history {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.history-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
 .sidebar-card.consultation-history {
     margin-bottom: 0;
 }
 .sidebar-card h6 {
     font-weight: 600;
     margin-bottom: 16px;
+}
+
+/* Notifications */
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+.notification-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.notification-item:last-child {
+    border-bottom: none;
+}
+.notification-item .title {
+    font-weight: 600;
+    font-size: 13px;
+    margin: 0;
+}
+.notification-item .meta {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0;
 }
 .date-nav {
     display: flex;

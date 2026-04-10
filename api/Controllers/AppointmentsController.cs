@@ -42,7 +42,7 @@ namespace AppointmentSystemAPI.Controllers
 
             var pending = await _context.Appointments.CountAsync(a => a.StudentId == studentId && a.Status == "pending");
             var accepted = await _context.Appointments.CountAsync(a => a.StudentId == studentId && a.Status == "accepted");
-            var cancelled = await _context.Appointments.CountAsync(a => a.StudentId == studentId && a.Status == "cancelled");
+            var cancelled = await _context.Appointments.CountAsync(a => a.StudentId == studentId && (a.Status == "cancelled" || a.Status == "declined"));
 
             return Ok(new { pending, accepted, cancelled });
         }
@@ -96,6 +96,7 @@ namespace AppointmentSystemAPI.Controllers
         }
 
         // GET: api/appointments/student/history
+                    private const int GraceMinutesAfterAppointment = 5;
         // Returns accepted appointments (past consultations)
         [HttpGet("student/history")]
         public async Task<IActionResult> GetStudentHistory()
@@ -295,12 +296,18 @@ namespace AppointmentSystemAPI.Controllers
             // Teacher availability rule:
             // - Allow multiple students to REQUEST (pending) the same slot.
             // - Prevent overlapping ACCEPTED appointments (teacher can't have two meetings at once).
-            var hasAcceptedConflict = await _context.Appointments.AnyAsync(a =>
-                a.TeacherId == dto.TeacherId
-                && a.AppointmentDate == appointmentDate
-                && a.Status == "accepted"
-                && a.StartTime < endTime
-                && a.EndTime > startTime
+            var acceptedForTeacherThatDay = await _context.Appointments
+                .Where(a => a.TeacherId == dto.TeacherId
+                    && a.AppointmentDate == appointmentDate
+                    && a.Status == "accepted")
+                .Select(a => new { a.StartTime, a.EndTime })
+                .ToListAsync();
+
+            // Grace time rule: the next booking must start at least 5 minutes after the previous
+            // accepted appointment ends (i.e., treat accepted slots as [start, end + 5min)).
+            var hasAcceptedConflict = acceptedForTeacherThatDay.Any(a =>
+                a.StartTime < endTime
+                && AddMinutesClamped(a.EndTime, GraceMinutesAfterAppointment) > startTime
             );
 
             if (hasAcceptedConflict)
@@ -332,6 +339,19 @@ namespace AppointmentSystemAPI.Controllers
             }
         }
 
+        private static TimeOnly AddMinutesClamped(TimeOnly time, int minutes)
+        {
+            if (minutes == 0) return time;
+
+            var added = time.Add(TimeSpan.FromMinutes(minutes));
+
+            // TimeOnly.Add wraps around past midnight; clamp instead.
+            if (minutes > 0 && added < time) return new TimeOnly(23, 59);
+            if (minutes < 0 && added > time) return new TimeOnly(0, 0);
+
+            return added;
+        }
+
         // ============================================
         // Teacher Endpoints
         // ============================================
@@ -345,7 +365,7 @@ namespace AppointmentSystemAPI.Controllers
 
             var pending = await _context.Appointments.CountAsync(a => a.TeacherId == teacherId && a.Status == "pending");
             var accepted = await _context.Appointments.CountAsync(a => a.TeacherId == teacherId && a.Status == "accepted");
-            var cancelled = await _context.Appointments.CountAsync(a => a.TeacherId == teacherId && a.Status == "cancelled");
+            var cancelled = await _context.Appointments.CountAsync(a => a.TeacherId == teacherId && (a.Status == "cancelled" || a.Status == "declined"));
 
             return Ok(new { pending, accepted, cancelled });
         }
@@ -654,7 +674,7 @@ namespace AppointmentSystemAPI.Controllers
             if (appointment.Status != "pending")
                 return BadRequest(new { message = "Only pending appointments can be declined" });
 
-            appointment.Status = "cancelled";
+            appointment.Status = "declined";
             appointment.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
 

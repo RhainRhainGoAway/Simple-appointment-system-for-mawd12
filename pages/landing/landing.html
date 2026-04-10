@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STIConnect - Book Time Smarter</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./landing.css" />
+</head>
+<body>
+  <header class="lp-header lp-snap" id="home">
+    <nav class="lp-nav">
+      <a class="lp-brand" href="#home" aria-label="STIConnect home">
+        <img class="lp-brand__img" src="../../assets/logo.png" alt="STI" />
+      </a>
+
+      <div class="lp-nav__links" role="navigation" aria-label="Primary">
+        <a class="lp-nav__link" href="#home">Home</a>
+        <a class="lp-nav__link" href="#about">About</a>
+        <a class="lp-btn lp-btn--nav" href="../../auth/login.html">Enter System →</a>
+      </div>
+
+      <button class="lp-nav__burger" type="button" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <section class="lp-hero">
+      <div class="lp-container lp-hero__grid">
+        <div class="lp-hero__copy">
+          <h1 class="lp-hero__title">
+            Book Time Smarter with
+            <span class="lp-hero__accent">STIConnect</span>
+          </h1>
+          <p class="lp-hero__subtitle">
+            A platform that helps students connect with teachers, set appointments,
+            and manage schedules in a simple way.
+          </p>
+          <div class="lp-hero__actions">
+            <a class="lp-btn lp-btn--primary" href="../../auth/login.html">Try it out now →</a>
+          </div>
+        </div>
+
+        <div class="lp-hero__art" aria-hidden="true">
+          <img
+            src="../../assets/Landing page V1/desktop/handshake.png"
+            alt=""
+            class="lp-hero__img"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main>
+    <section class="lp-section lp-snap lp-section--bg-left" id="about">
+      <div class="lp-container lp-split">
+        <div class="lp-split__copy">
+          <h2 class="lp-h2">Appointment <span class="lp-underlined-word">Management</span></h2>
+          <p class="lp-text">
+            Students can create and send appointment requests to teachers.
+            Teachers can accept, decline, or reschedule them through the system.
+          </p>
+          <a class="lp-btn lp-btn--primary" href="../../auth/login.html">Get Started →</a>
+        </div>
+
+        <div class="lp-split__media" aria-hidden="true">
+          <img
+            class="lp-illus"
+            src="../../assets/Landing page V1/desktop/Work Together Image.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="lp-section lp-section--alt lp-snap lp-section--bg-right" id="contact">
+      <div class="lp-container lp-split lp-split--reverse">
+        <div class="lp-split__media" aria-hidden="true">
+          <img
+            class="lp-illus lp-illus--orbit"
+            src="../../assets/Landing page V1/desktop/Image-container.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <div class="lp-split__copy">
+          <h2 class="lp-h2">
+            Stay <span class="lp-underlined-word lp-underlined-word--tight">Connected</span>
+          </h2>
+          <p class="lp-text">
+            Communicate with your teachers through appointment requests and
+            confirmations. Get instant updates when your meeting is approved.
+          </p>
+          <a class="lp-btn lp-btn--primary" href="../../auth/login.html">Try it now →</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="lp-footer">
+      <div class="lp-container lp-footer__inner">
+        <div class="lp-footer__brand">
+          <img src="../../assets/logo.png" alt="STI" />
+          <span>STIConnect</span>
+        </div>
+        <div class="lp-footer__meta">© <span id="year"></span> STIConnect</div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./landing.js"></script>
+</body>
+</html>

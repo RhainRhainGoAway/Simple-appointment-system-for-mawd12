@@ -59,6 +59,7 @@ let pendingStudentsCount = 0;
 
 async function initDashboard() {
     await loadStats();
+    await loadNotifications();
     pendingStudentsCount = await loadPendingStudents();
     await loadHistory();
 }
@@ -71,9 +72,65 @@ async function loadStats() {
             document.getElementById('pending-count').textContent = data.pending;
             document.getElementById('approved-count').textContent = data.accepted;
             document.getElementById('cancelled-count').textContent = data.cancelled;
+
+            return data;
         }
     } catch (error) {
         console.error('Error loading stats:', error);
+    }
+
+    return null;
+}
+
+function getStatusNotificationTextForTeacher(status) {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (normalized === 'accepted') return 'Accepted by teacher';
+    if (normalized === 'declined') return 'Declined by teacher';
+    if (normalized === 'cancelled') return 'Cancelled by admin';
+    return null;
+}
+
+async function loadNotifications() {
+    const container = document.getElementById('notificationList');
+    if (!container) return;
+
+    try {
+        const response = await apiCall('/appointments/teacher/all');
+        if (!response || !response.ok) {
+            container.innerHTML = '<p class="text-muted small">No new notifications</p>';
+            return;
+        }
+
+        const all = await response.json();
+        const recent = (Array.isArray(all) ? all : [])
+            .filter(a => {
+                const statusText = getStatusNotificationTextForTeacher(a.status);
+                return !!statusText;
+            })
+            .slice(0, 6);
+
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="text-muted small">No new notifications</p>';
+            return;
+        }
+
+        container.innerHTML = recent.map(a => {
+            const statusText = getStatusNotificationTextForTeacher(a.status);
+            const fullName = `${a.firstName || ''} ${a.lastName || ''}`.trim();
+            const who = fullName || 'Student';
+            const meta = `${who} • ${a.appointmentDate || ''} • ${a.startTime || ''} - ${a.endTime || ''}`.trim();
+            return `
+                <div class="notification-item">
+                    <div>
+                        <p class="title">${escapeHtml(statusText || '')}</p>
+                        <p class="meta">${escapeHtml(meta)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        container.innerHTML = '<p class="text-muted small">No new notifications</p>';
     }
 }
 
@@ -117,11 +174,7 @@ async function loadHistory() {
                 return;
             }
 
-            // Keep sidebar from needing scroll: show fewer rows when there are pending requests.
-            const MAX_HISTORY_ROWS = pendingStudentsCount >= 3 ? 6 : (pendingStudentsCount >= 1 ? 8 : 10);
-            const rows = history.slice(0, MAX_HISTORY_ROWS);
-
-            tbody.innerHTML = rows.map(h => `
+            tbody.innerHTML = history.map(h => `
                 <tr>
                     <td>
                         <div class="history-item">

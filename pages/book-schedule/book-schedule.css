@@ -71,6 +71,19 @@
     color: #dc2626;
 }
 
+.time-slot.fully-booked {
+    background: #f8f9fa;
+    border-color: #3b82f6;
+    color: #3b82f6;
+    cursor: not-allowed;
+}
+
+.time-slot.fully-booked:hover {
+    background: #f8f9fa;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
 /* Teacher Info */
 .teacher-info {
     display: flex;

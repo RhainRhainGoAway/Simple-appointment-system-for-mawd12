@@ -16,13 +16,18 @@ body {
     color: #333;
 }
 
-.site-logo {
+.site-logo-link {
     position: fixed;
     top: 24px;
     left: 24px;
+    z-index: 10;
+    display: inline-block;
+}
+
+.site-logo {
     height: 56px;
     width: auto;
-    z-index: 10;
+    display: block;
 }
 
 .container {

@@ -2,6 +2,19 @@
 // TEACHER MY-SCHEDULE - Consultations only from API
 // ============================================
 
+const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const weekdaysShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function formatWeekTitle(view) {
+    const start = new Date(view.activeStart);
+    const endExclusive = new Date(view.activeEnd);
+    const end = new Date(endExclusive);
+    end.setDate(end.getDate() - 1);
+
+    return `${monthsShort[start.getMonth()]} ${start.getDate()} - ${monthsShort[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     var calendarEl = document.getElementById('schedule-calendar');
     if (!calendarEl) return;
@@ -25,8 +38,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             center: 'title',
             right: 'next'
         },
-        titleFormat: { weekday: 'short', day: 'numeric' },
-        dayHeaderFormat: { weekday: 'short', day: 'numeric' },
+        firstDay: 1,
+        dayHeaderContent: function(arg) {
+            const d = arg.date;
+            const label = `${weekdaysShort[d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
+            return { html: `<span>${label}</span>` };
+        },
         slotMinTime: '07:00:00',
         slotMaxTime: '18:00:00',
         weekends: false,
@@ -128,6 +145,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         },
         datesSet: function(dateInfo) {
+            const titleEl = calendarEl.querySelector('.fc-toolbar-title');
+            if (titleEl) titleEl.textContent = formatWeekTitle(dateInfo.view);
+
             const months = ['January', 'February', 'March', 'April', 'May', 'June',
                             'July', 'August', 'September', 'October', 'November', 'December'];
             const date = dateInfo.view.currentStart;

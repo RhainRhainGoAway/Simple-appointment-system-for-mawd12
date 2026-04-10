@@ -114,6 +114,15 @@
     cursor: pointer;
 }
 
+/* Hour/Minute split selects (alarm-clock style) */
+.time-select.time-hour-select {
+    width: 70px;
+}
+
+.time-select.time-minute-select {
+    width: 70px;
+}
+
 .time-select:focus {
     outline: none;
     border-color: #2563eb;

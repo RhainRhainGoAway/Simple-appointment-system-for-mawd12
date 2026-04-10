@@ -40,15 +40,22 @@ namespace AppointmentSystemAPI.Controllers
                 return BadRequest(new { message = "Email is already registered!" });
             }
 
+            var role = (model.Role ?? string.Empty).Trim().ToLowerInvariant();
+            if (role != "student" && role != "teacher")
+            {
+                // Admin users should be created manually by setting the role in the database.
+                return BadRequest(new { message = "Invalid role. Only student and teacher registration is allowed." });
+            }
+
             // Create new user with hashed password
             var user = new AppUser
             {
                 Name = model.Name,
                 Email = model.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                Role = model.Role,
-                StudentNumber = model.Role == "student" ? model.StudentNumber : null,
-                SectionId = model.Role == "student" ? model.SectionId : null
+                Role = role,
+                StudentNumber = role == "student" ? model.StudentNumber : null,
+                SectionId = role == "student" ? model.SectionId : null
             };
 
             _context.Users.Add(user);
@@ -74,18 +81,24 @@ namespace AppointmentSystemAPI.Controllers
             // Generate JWT token
             var token = GenerateJwtToken(user);
 
+            var role = (user.Role ?? string.Empty).Trim().ToLowerInvariant();
+            var redirect = role switch
+            {
+                "admin" => "/pages/dashboard/admin/dashboard.html",
+                "teacher" => "/pages/dashboard/teacher/dashboard.html",
+                _ => "/pages/dashboard/student/dashboard.html"
+            };
+
             // Return user info and redirect path
             return Ok(new
             {
                 token,
                 name = user.Name,
                 email = user.Email,
-                role = user.Role,
+                role,
                 studentNumber = user.StudentNumber,
                 profilePicture = user.ProfilePicture,
-                redirect = user.Role == "teacher"
-                    ? "/pages/dashboard/teacher/dashboard.html"
-                    : "/pages/dashboard/student/dashboard.html"
+                redirect
             });
         }
 
@@ -143,11 +156,13 @@ namespace AppointmentSystemAPI.Controllers
 
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var role = (user.Role ?? string.Empty).Trim().ToLowerInvariant();
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.Role, role),
                 new Claim("UserId", user.Id.ToString())
             };
 

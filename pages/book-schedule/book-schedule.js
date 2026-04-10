@@ -200,7 +200,15 @@ function renderTeacherTable() {
             const isPast = slotDate < today;
             const bookDateStr = toLocalDateStr(slotDate);
 
-            if (isPast || day.closed || day.slots.length === 0) {
+            if (isPast || day.closed) {
+                return `<td><div class="slots-container"><button class="time-slot closed">Closed</button></div></td>`;
+            }
+
+            if (day.fullyBooked) {
+                return `<td><div class="slots-container"><button class="time-slot fully-booked" disabled>Fully Booked</button></div></td>`;
+            }
+
+            if (!day.slots || day.slots.length === 0) {
                 return `<td><div class="slots-container"><button class="time-slot closed">Closed</button></div></td>`;
             }
             const slotButtons = day.slots.map(slot => {

@@ -122,6 +122,11 @@
     text-transform: uppercase;
 }
 
+/* Today header text highlight (match dashboard) */
+.fc-day-today .fc-col-header-cell-cushion {
+    color: var(--primary-color);
+}
+
 /* Time Grid */
 .fc-timegrid-slot {
     height: var(--myschedule-slot-height) !important;
@@ -375,13 +380,13 @@
     font-weight: 600 !important;
 }
 
-/* Today highlight - subtle */
+/* Today highlight (match dashboard) */
 .fc-day-today {
-    background: transparent !important;
+    background: rgba(21, 112, 239, 0.04) !important;
 }
 
 .fc-timegrid-col.fc-day-today {
-    background: transparent !important;
+    background: rgba(21, 112, 239, 0.04) !important;
 }
 
 /* Scrollbar */

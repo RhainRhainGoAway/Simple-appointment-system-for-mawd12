@@ -212,7 +212,7 @@ async function declineRequest(id) {
             throw new Error('Failed to decline');
         }
 
-        updateRequestStatus(id, 'cancelled');
+        updateRequestStatus(id, 'declined');
         render();
 
         // Best-effort refresh from server (keeps UI state if refresh fails)

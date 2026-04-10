@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachers - Admin</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../../../shared/css/sidebar.css">
+    <link rel="stylesheet" href="./teachers.css">
+    <link rel="stylesheet" href="../../../shared/css/alerts.css">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- Box Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css?v=2' rel='stylesheet'>
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <section class="home">
+        <div class="header-row">
+            <div class="page-header">
+                <h2>Teachers</h2>
+                <p>List of Teachers and Weekly consulted minutes</p>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search">
+                <i class='bx bx-search'></i>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="pending-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Consulted Minutes (This Week)</th>
+                    </tr>
+                </thead>
+                <tbody id="teachersTableBody"></tbody>
+            </table>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class='bx bx-user-x'></i>
+                <p>No teachers found.</p>
+            </div>
+
+            <div id="loadingState" class="loading-state">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading teachers...</p>
+            </div>
+        </div>
+
+        <div class="pagination-container" id="paginationContainer"></div>
+    </section>
+
+    <script src="/appointment_system/shared/js/load-sidebar-admin.js"></script>
+    <script src="/appointment_system/shared/js/alerts.js"></script>
+    <script src="/appointment_system/shared/js/api.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <script src="./teachers.js"></script>
+</body>
+</html>

@@ -50,17 +50,91 @@ function normalizeTimeStr(value) {
     return `${hh}:${mm}`;
 }
 
-function buildHourOptions(selectedValue) {
-    const selected = normalizeTimeStr(selectedValue);
-    const options = [{ value: '00:00', label: '—' }];
+function splitTimeStr(value) {
+    const normalized = normalizeTimeStr(value);
+    const parts = normalized.split(':');
+    return {
+        hour: (parts[0] || '00').padStart(2, '0'),
+        minute: (parts[1] || '00').padStart(2, '0')
+    };
+}
+
+function normalizeTwoDigit(value) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return String(value ?? '').padStart(2, '0').slice(-2);
+    return String(num).padStart(2, '0');
+}
+
+function composeTimeStr(hour, minute) {
+    const hh = normalizeTwoDigit(hour);
+    const mm = normalizeTwoDigit(minute);
+    // Keep 00:00 as a sentinel value (means "no selection")
+    // so the backend will treat it as null via ParseTime().
+    if (hh === '00') return '00:00';
+    return `${hh}:${mm}`;
+}
+
+function buildHourOptions12(selectedHour) {
+    const selected = normalizeTwoDigit(selectedHour ?? '00');
+    const options = [{ value: '00', label: 'Select' }];
     for (let hour = 1; hour <= 12; hour++) {
-        const value = `${String(hour).padStart(2, '0')}:00`;
-        options.push({ value, label: `${hour}:00` });
+        const value = String(hour).padStart(2, '0');
+        options.push({ value, label: String(hour) });
     }
 
     return options
         .map(o => `<option value="${o.value}" ${o.value === selected ? 'selected' : ''}>${o.label}</option>`)
         .join('');
+}
+
+function buildMinuteOptions(selectedMinute) {
+    const selected = normalizeTwoDigit(selectedMinute ?? '00');
+    const options = [];
+    for (let minute = 0; minute <= 59; minute++) {
+        const value = String(minute).padStart(2, '0');
+        options.push({ value, label: value });
+    }
+
+    return options
+        .map(o => `<option value="${o.value}" ${o.value === selected ? 'selected' : ''}>${o.label}</option>`)
+        .join('');
+}
+
+function isUnsetTimeValue(timeStr) {
+    return normalizeTimeStr(timeStr) === '00:00';
+}
+
+function formatDayLabel(day) {
+    const map = { mon: 'Mon', tue: 'Tues', wed: 'Wed', thu: 'Thurs', fri: 'Fri' };
+    return map[day] || day;
+}
+
+function validateScheduleBeforeSave() {
+    const errors = [];
+
+    // Weekly schedule: if day is enabled, all slots must have valid start/end time
+    Object.keys(scheduleState.weekly).forEach(day => {
+        const dayData = scheduleState.weekly[day];
+        if (!dayData.enabled) return;
+        (dayData.slots || []).forEach((slot, idx) => {
+            if (isUnsetTimeValue(slot.startTime) || isUnsetTimeValue(slot.endTime)) {
+                errors.push(`${formatDayLabel(day)} slot ${idx + 1}: time is not valid (please choose an hour instead of Select).`);
+            }
+        });
+    });
+
+    // Date-specific: if not closed, all slots must have valid start/end time
+    (scheduleState.specificDates || []).forEach(item => {
+        if (item.isClosed) return;
+        const dateLabel = item.date instanceof Date ? item.date.toDateString() : String(item.date);
+        (item.slots || []).forEach((slot, idx) => {
+            if (isUnsetTimeValue(slot.startTime) || isUnsetTimeValue(slot.endTime)) {
+                errors.push(`${dateLabel} slot ${idx + 1}: time is not valid (please choose an hour instead of Select).`);
+            }
+        });
+    });
+
+    return errors;
 }
 
 // ============================================
@@ -190,6 +264,8 @@ function renderTimeSlots(day) {
     
     // Generate HTML for each slot
     slots.forEach((slot, index) => {
+        const start = splitTimeStr(slot.startTime);
+        const end = splitTimeStr(slot.endTime);
         // HTML template para sa isang time slot row
         // May star button (preferred), time inputs, delete, at add buttons
         const slotHtml = `
@@ -198,8 +274,11 @@ function renderTimeSlots(day) {
                     <i class='bx ${slot.isPreferred ? 'bxs-star' : 'bx-star'}'></i>
                 </button>
                 <div class="time-input-group">
-                    <select class="time-select" onchange="updateSlotTime('${day}', ${slot.id}, 'startTime', this.value)" aria-label="Start time">
-                        ${buildHourOptions(slot.startTime)}
+                    <select class="time-select time-hour-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'startTime', 'hour', this.value)" aria-label="Start hour">
+                        ${buildHourOptions12(start.hour)}
+                    </select>
+                    <select class="time-select time-minute-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'startTime', 'minute', this.value)" aria-label="Start minute">
+                        ${buildMinuteOptions(start.minute)}
                     </select>
                     <select class="period-select" onchange="updateSlotTime('${day}', ${slot.id}, 'startPeriod', this.value)">
                         <option value="AM" ${slot.startPeriod === 'AM' ? 'selected' : ''}>AM</option>
@@ -208,8 +287,11 @@ function renderTimeSlots(day) {
                 </div>
                 <span class="time-separator">—</span>
                 <div class="time-input-group">
-                    <select class="time-select" onchange="updateSlotTime('${day}', ${slot.id}, 'endTime', this.value)" aria-label="End time">
-                        ${buildHourOptions(slot.endTime)}
+                    <select class="time-select time-hour-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'endTime', 'hour', this.value)" aria-label="End hour">
+                        ${buildHourOptions12(end.hour)}
+                    </select>
+                    <select class="time-select time-minute-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'endTime', 'minute', this.value)" aria-label="End minute">
+                        ${buildMinuteOptions(end.minute)}
                     </select>
                     <select class="period-select" onchange="updateSlotTime('${day}', ${slot.id}, 'endPeriod', this.value)">
                         <option value="AM" ${slot.endPeriod === 'AM' ? 'selected' : ''}>AM</option>
@@ -226,6 +308,22 @@ function renderTimeSlots(day) {
         `;
         slotsContainer.insertAdjacentHTML('beforeend', slotHtml);
     });
+}
+
+/**
+ * updateSlotTimePart() - Update hour/minute part of a time string field (startTime/endTime)
+ * Called when user changes hour or minute dropdown
+ */
+function updateSlotTimePart(day, slotId, field, part, value) {
+    const slot = scheduleState.weekly[day].slots.find(s => s.id === slotId);
+    if (!slot) return;
+    if (field !== 'startTime' && field !== 'endTime') return;
+    if (part !== 'hour' && part !== 'minute') return;
+
+    const current = splitTimeStr(slot[field]);
+    const nextHour = part === 'hour' ? value : current.hour;
+    const nextMinute = part === 'minute' ? value : current.minute;
+    slot[field] = composeTimeStr(nextHour, nextMinute);
 }
 
 /**
@@ -463,16 +561,22 @@ function addSpecificTimeSlotRow() {
     // HTML template para sa time slot row
     const rowHtml = `
         <div class="specific-time-row" data-row-id="${rowId}">
-            <select class="time-select" aria-label="Start time">
-                ${buildHourOptions('00:00')}
+            <select class="time-select time-hour-select" aria-label="Start hour">
+                ${buildHourOptions12('00')}
+            </select>
+            <select class="time-select time-minute-select" aria-label="Start minute">
+                ${buildMinuteOptions('00')}
             </select>
             <select class="period-select">
                 <option value="AM">AM</option>
                 <option value="PM">PM</option>
             </select>
             <span class="time-separator">—</span>
-            <select class="time-select" aria-label="End time">
-                ${buildHourOptions('00:00')}
+            <select class="time-select time-hour-select" aria-label="End hour">
+                ${buildHourOptions12('00')}
+            </select>
+            <select class="time-select time-minute-select" aria-label="End minute">
+                ${buildMinuteOptions('00')}
             </select>
             <select class="period-select">
                 <option value="AM">AM</option>
@@ -527,30 +631,45 @@ async function saveSpecificDate() {
     // Kung hindi closed, collect yung time slots
     if (!isClosed) {
         timeRows.forEach(row => {
-            const inputs = row.querySelectorAll('.time-select');
+            const hourSelects = row.querySelectorAll('.time-hour-select');
+            const minuteSelects = row.querySelectorAll('.time-minute-select');
             const selects = row.querySelectorAll('.period-select');
-            const startTime = inputs[0].value;
-            const endTime = inputs[1].value;
-            const startPeriod = selects[0].value;
-            const endPeriod = selects[1].value;
-            
-            // Special case: 00:00 - 00:00 means closed
-            if (startTime === '00:00' && endTime === '00:00' && startPeriod === 'AM' && endPeriod === 'AM') {
-                isClosed = true;
-            } else {
-                timeSlots.push({
-                    startTime: startTime,
-                    startPeriod: startPeriod,
-                    endTime: endTime,
-                    endPeriod: endPeriod
-                });
+            const startTime = composeTimeStr(hourSelects[0]?.value, minuteSelects[0]?.value);
+            const endTime = composeTimeStr(hourSelects[1]?.value, minuteSelects[1]?.value);
+            const startPeriod = selects[0]?.value;
+            const endPeriod = selects[1]?.value;
+
+            // If any row is still unset, block accept (teacher must pick a real time or mark as closed)
+            if (isUnsetTimeValue(startTime) || isUnsetTimeValue(endTime)) {
+                timeSlots.push({ __invalid: true });
+                return;
             }
+
+            timeSlots.push({
+                startTime: startTime,
+                startPeriod: startPeriod,
+                endTime: endTime,
+                endPeriod: endPeriod
+            });
         });
+
+        // Detect invalid rows
+        const hasInvalid = timeSlots.some(s => s && s.__invalid);
+        if (hasInvalid) {
+            await appAlert('Time is not valid. Please choose an hour instead of Select, or mark the day as closed.', { title: 'Notice' });
+            return;
+        }
+
+        // Strip any helper flags (safety)
+        for (let i = timeSlots.length - 1; i >= 0; i--) {
+            if (timeSlots[i] && timeSlots[i].__invalid) timeSlots.splice(i, 1);
+        }
     }
     
     // Kung walang valid slots at hindi explicitly marked as closed, treat as closed
     if (timeSlots.length === 0 && !isClosed) {
-        isClosed = true;
+        await appAlert('Please add at least one valid time slot, or mark as closed.', { title: 'Notice' });
+        return;
     }
     
     // Remove existing entry kung may same date na (override)
@@ -702,6 +821,24 @@ async function loadSavedSchedule() {
 document.getElementById('saveScheduleBtn')?.addEventListener('click', async function() {
     const btn = this;
     const originalText = btn.innerHTML;
+
+    // Validation: block saving when any slot still uses the "Select" hour
+    const validationErrors = validateScheduleBeforeSave();
+    if (validationErrors.length > 0) {
+        await appAlert(validationErrors.join('\n'), { title: 'Time is not valid', variant: 'danger' });
+        return;
+    }
+
+    const ok = await appConfirm(
+        'Are you sure you want to confirm your schedule? Saving will be seen in the book schedule by the students.',
+        {
+            title: 'Confirm Schedule',
+            okText: 'Yes, save',
+            cancelText: 'Cancel',
+            variant: 'primary'
+        }
+    );
+    if (!ok) return;
 
     // Build DTO matching the API's SaveScheduleDto
     const dataToSave = {

@@ -53,14 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('welcomeName').textContent = firstName;
     }
 
-    loadStats();
-
-    // Keep the right sidebar non-scrollable by:
-    // - showing max 3 teachers
-    // - reducing history rows based on how many teachers are shown
     (async () => {
-        const teacherCount = await loadTeachers();
-        await loadHistory(teacherCount);
+        await loadStats();
+        await loadNotifications();
+        await loadTeachers();
+        await loadHistory();
     })();
 });
 
@@ -72,9 +69,63 @@ async function loadStats() {
             document.getElementById('pending-count').textContent = data.pending;
             document.getElementById('approved-count').textContent = data.accepted;
             document.getElementById('cancelled-count').textContent = data.cancelled;
+
+            return data;
         }
     } catch (error) {
         console.error('Error loading stats:', error);
+    }
+
+    return null;
+}
+
+function getStatusNotificationTextForStudent(status) {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (normalized === 'accepted') return 'Accepted by teacher';
+    if (normalized === 'declined') return 'Declined by teacher';
+    if (normalized === 'cancelled') return 'Cancelled by admin';
+    return null;
+}
+
+async function loadNotifications() {
+    const container = document.getElementById('notificationList');
+    if (!container) return;
+
+    try {
+        const response = await apiCall('/appointments/student/all');
+        if (!response || !response.ok) {
+            container.innerHTML = '<p class="text-muted small">No new notifications</p>';
+            return;
+        }
+
+        const all = await response.json();
+        const recent = (Array.isArray(all) ? all : [])
+            .filter(a => {
+                const statusText = getStatusNotificationTextForStudent(a.status);
+                return !!statusText;
+            })
+            .slice(0, 6);
+
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="text-muted small">No new notifications</p>';
+            return;
+        }
+
+        container.innerHTML = recent.map(a => {
+            const statusText = getStatusNotificationTextForStudent(a.status);
+            const meta = `${a.teacherName || 'Teacher'} • ${a.appointmentDate || ''} • ${a.startTime || ''} - ${a.endTime || ''}`.trim();
+            return `
+                <div class="notification-item">
+                    <div>
+                        <p class="title">${escapeHtml(statusText || '')}</p>
+                        <p class="meta">${escapeHtml(meta)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        container.innerHTML = '<p class="text-muted small">No new notifications</p>';
     }
 }
 
@@ -86,11 +137,10 @@ async function loadTeachers() {
             const container = document.getElementById('teacherList');
             if (teachers.length === 0) {
                 container.innerHTML = '<p class="text-muted small">No teachers available</p>';
-                return 0;
+                return;
             }
 
-            const shownTeachers = teachers.slice(0, 3);
-            container.innerHTML = shownTeachers.map(t => `
+            container.innerHTML = teachers.map(t => `
                 <div class="teacher-item">
                     <div class="teacher-info">
                         <img src="${t.profilePicture || '/appointment_system/assets/logo-0.png'}" alt="Teacher">
@@ -100,23 +150,14 @@ async function loadTeachers() {
                 </div>
             `).join('');
 
-            return shownTeachers.length;
+            return;
         }
     } catch (error) {
         console.error('Error loading teachers:', error);
     }
-
-    return 0;
 }
 
-function getHistoryRowLimit(teacherCount) {
-    if (teacherCount === 1) return 9;
-    if (teacherCount === 2) return 8;
-    if (teacherCount >= 3) return 7;
-    return 9;
-}
-
-async function loadHistory(teacherCount = 0) {
+async function loadHistory() {
     try {
         const response = await apiCall('/appointments/student/history');
         if (response && response.ok) {
@@ -127,10 +168,7 @@ async function loadHistory(teacherCount = 0) {
                 return;
             }
 
-            const maxRows = getHistoryRowLimit(teacherCount);
-            const rows = history.slice(0, maxRows);
-
-            tbody.innerHTML = rows.map(h => `
+            tbody.innerHTML = history.map(h => `
                 <tr>
                     <td>
                         <div class="history-item">

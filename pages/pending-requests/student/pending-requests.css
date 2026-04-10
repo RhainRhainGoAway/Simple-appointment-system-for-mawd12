@@ -131,9 +131,14 @@
     color: #ffffff;
 }
 
-.status-badge.cancelled {
+.status-badge.declined {
     background: #fdba74;
     color: #9a3412;
+}
+
+.status-badge.cancelled {
+    background: #ef4444;
+    color: #ffffff;
 }
 
 /* ==================== VIEW BUTTON ==================== */

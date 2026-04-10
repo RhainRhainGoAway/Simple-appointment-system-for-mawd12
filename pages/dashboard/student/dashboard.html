@@ -41,6 +41,7 @@
                         <p class="name" id="profileBtnName">Loading...</p>
                         <p class="student-id" id="profileBtnStudentId">Loading...</p>
                     </div>
+                    <i class='bx bx-chevron-down dropdown-icon' aria-hidden="true"></i>
                 </div>
                 <div class="profile-menu" id="profileMenu">
                     <div class="profile-menu-header">
@@ -54,6 +55,18 @@
                         <i class='bx bx-cog'></i>
                         Profile Settings
                     </a>
+                    <a href="#" class="profile-menu-item logout-item" onclick="logout(); return false;">
+                        <i class='bx bx-log-out'></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="sidebar-card notifications">
+                <h6>Notifications:</h6>
+                <div class="notification-list" id="notificationList">
+                    <p class="text-muted small">Loading...</p>
                 </div>
             </div>
 
@@ -68,18 +81,20 @@
             <!-- Consultation History -->
             <div class="sidebar-card consultation-history">
                 <h6>Consultation history:</h6>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Date</th>
-                            <th>Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <tr><td colspan="3" class="text-muted small">Loading...</td></tr>
-                    </tbody>
-                </table>
+                <div class="history-scroll">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="3" class="text-muted small">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -88,8 +103,8 @@
             <div class="container-fluid py-4">
                 <!-- Welcome Section -->
                 <div class="mb-4">
-                    <h2 class="fw-bold">Welcome back, <span class="text-primary" id="welcomeName">Student</span></h2>
-                    <p class="text-muted">Check your pending requests or book a new appointment now.</p>
+                    <h2 class="fw-bold mb-1">Welcome back, <span class="text-primary" id="welcomeName">Student</span></h2>
+                    <p class="text-muted mb-0 page-subtitle">Check your pending requests or book a new appointment now.</p>
                 </div>
 
                 <!-- Stats Cards Row -->

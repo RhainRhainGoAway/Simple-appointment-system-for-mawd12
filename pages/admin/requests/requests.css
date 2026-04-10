@@ -1,0 +1,11 @@
+@import url('../../pending-requests/student/pending-requests.css');
+
+/* Admin requests table is wider */
+.pending-table thead th,
+.pending-table tbody td {
+    padding: 14px 16px;
+}
+
+.table-responsive {
+    width: 100%;
+}

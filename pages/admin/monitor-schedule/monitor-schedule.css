@@ -1,0 +1,15 @@
+@import url('../../book-schedule/book-schedule.css');
+
+/* Make slots clearly non-interactive for admin */
+.time-slot {
+    cursor: default;
+}
+
+.time-slot:hover {
+    border-color: #e2e8f0;
+    color: #1f2937;
+}
+
+.time-slot[disabled] {
+    opacity: 1;
+}

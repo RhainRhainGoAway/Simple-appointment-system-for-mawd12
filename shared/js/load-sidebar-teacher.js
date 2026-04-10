@@ -35,10 +35,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Restore yung previous state ng sidebar (open or closed)
                 restoreSidebarState();
+
+                // Close sidebar kapag nag-navigate sa ibang page
+                initSidebarCloseOnNavigation();
             })
             .catch(error => console.error('Error loading sidebar:', error));  // Error handling kung may mali
     }
 });
+
+// ============================================
+// CLOSE SIDEBAR ON NAVIGATION
+// ============================================
+
+/**
+ * Kapag nag-click ng link sa sidebar (navigating to another page),
+ * auto-close natin yung sidebar and i-save sa localStorage.
+ */
+function initSidebarCloseOnNavigation() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    sidebar.addEventListener('click', (event) => {
+        const link = event.target && event.target.closest ? event.target.closest('a') : null;
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href || href === '#' || href.startsWith('#') || href.toLowerCase().startsWith('javascript:')) return;
+        if (link.target && link.target.toLowerCase() === '_blank') return;
+
+        sidebar.classList.add('close');
+        sidebar.classList.add('is-collapsed');
+        localStorage.setItem('sidebarClosed', true);
+    });
+
+    // Kapag nag-leave ng page (kahit back/forward or manual URL),
+    // i-set natin sa closed para closed ulit sa next page.
+    window.addEventListener('pagehide', () => {
+        localStorage.setItem('sidebarClosed', true);
+    });
+}
 
 // ============================================
 // SIDEBAR TOGGLE FUNCTIONALITY
@@ -57,13 +92,29 @@ function initSidebarToggle() {
     // Check kung may toggle button at sidebar (para safe)
     if (toggle && sidebar) {
         toggle.addEventListener('click', () => {
-            // Toggle yung 'close' class sa sidebar
-            sidebar.classList.toggle('close');
-            
-            // Save yung current state sa localStorage para ma-remember
-            // Kahit mag-refresh yung page, nandun pa rin yung preference ng user
-            const isClosed = sidebar.classList.contains('close');
-            localStorage.setItem('sidebarClosed', isClosed);
+            const isCurrentlyClosed = sidebar.classList.contains('close');
+
+            // OPENING
+            if (isCurrentlyClosed) {
+                sidebar.classList.remove('is-collapsed');
+                sidebar.classList.remove('close');
+                localStorage.setItem('sidebarClosed', false);
+                return;
+            }
+
+            // CLOSING
+            sidebar.classList.add('close');
+            localStorage.setItem('sidebarClosed', true);
+
+            const onTransitionEnd = (event) => {
+                if (event.propertyName !== 'width') return;
+                sidebar.removeEventListener('transitionend', onTransitionEnd);
+                if (sidebar.classList.contains('close')) {
+                    sidebar.classList.add('is-collapsed');
+                }
+            };
+
+            sidebar.addEventListener('transitionend', onTransitionEnd);
         });
     }
 }
@@ -81,14 +132,12 @@ function initSidebarToggle() {
  */
 function restoreSidebarState() {
     const sidebar = document.querySelector(".sidebar");
-    
-    // Kunin yung saved state galing localStorage
-    const sidebarClosed = localStorage.getItem('sidebarClosed');
-    
-    // Apply yung state sa sidebar
-    if (sidebar && sidebarClosed === 'true') {
-        sidebar.classList.add('close');     // Closed state
-    } else if (sidebar) {
-        sidebar.classList.remove('close');  // Open state
+
+    // Default behavior: always start CLOSED on every page load.
+    // Para closed sa first login at kahit mag-switch ng pages, nagsasara ulit.
+    if (sidebar) {
+        sidebar.classList.add('close');
+        sidebar.classList.add('is-collapsed');
+        localStorage.setItem('sidebarClosed', true);
     }
 }

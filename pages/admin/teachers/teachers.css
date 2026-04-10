@@ -1,0 +1,6 @@
+@import url('../students/students.css');
+
+/* Teachers table tweaks */
+.pending-table tbody td:nth-child(3) {
+    font-weight: 700;
+}
