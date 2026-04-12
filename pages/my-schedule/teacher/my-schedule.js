@@ -21,14 +21,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const events = await loadConsultations();
 
-    // Navigate to the nearest future consultation if any exist
-    let initialDate = new Date();
-    if (events.length > 0) {
-        const now = new Date();
-        const sorted = [...events].sort((a, b) => new Date(a.start) - new Date(b.start));
-        const nearest = sorted.find(e => new Date(e.start) >= now) || sorted[sorted.length - 1];
-        initialDate = new Date(nearest.start);
-    }
+    // Default to the current week when opening "My Schedule".
+    const initialDate = new Date();
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',

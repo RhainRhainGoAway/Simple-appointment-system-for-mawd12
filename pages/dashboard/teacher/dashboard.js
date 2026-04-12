@@ -118,9 +118,11 @@ async function loadNotifications() {
             const statusText = getStatusNotificationTextForTeacher(a.status);
             const fullName = `${a.firstName || ''} ${a.lastName || ''}`.trim();
             const who = fullName || 'Student';
+            const avatarSrc = a.studentProfilePicture || '/appointment_system/assets/logo-0.png';
             const meta = `${who} • ${a.appointmentDate || ''} • ${a.startTime || ''} - ${a.endTime || ''}`.trim();
             return `
                 <div class="notification-item">
+                    <img class="notification-avatar" src="${avatarSrc}" alt="Profile">
                     <div>
                         <p class="title">${escapeHtml(statusText || '')}</p>
                         <p class="meta">${escapeHtml(meta)}</p>

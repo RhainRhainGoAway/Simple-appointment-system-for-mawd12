@@ -61,6 +61,11 @@ body {
     z-index: 100;
 }
 
+/* Use to set initial state without animating (prevents load-time "jump") */
+.sidebar.no-transition {
+    transition: none !important;
+}
+
 .sidebar.close {
     width: var(--sidebar-collapsed-width);
 }
@@ -131,12 +136,14 @@ header .image-text .header-text {
 
 .header-text .name{
     margin-top: 5px;
+    margin-left: 10px;
     font-weight: 600;
     color: var(--primary-color);
 }
 
 .header-text .system{
     margin-top: -2px;
+    margin-left: 10px;
     
 }
 
@@ -173,6 +180,11 @@ header .image-text .header-text {
 .sidebar li .text {
     color: var(--text-color);
     transition: color 0.2s ease;
+}
+
+/* Tighten spacing between icon and text (open state only) */
+.sidebar:not(.close) li a .text {
+    margin-left: -10px;
 }
 
 .sidebar header .toggle {
@@ -246,7 +258,15 @@ header .image-text .header-text {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    overflow: hidden;
+    overflow: visible;
+}
+
+/* Extend the hover highlight to the LEFT (open state only) without moving content */
+.sidebar:not(.close) li a {
+    flex: 0 0 auto;
+    width: calc(100% + 14px);
+    margin-left: -14px;
+    padding-left: 20px;
 }
 
 .home {

@@ -3,6 +3,8 @@ const API_BASE = 'http://localhost:5001/api';
 
 // Store sections data
 let sectionsData = [];
+let sectionsLoaded = false;
+let sectionsLoadPromise = null;
 
 // ============================================
 // FETCH SECTIONS ON PAGE LOAD
@@ -15,11 +17,63 @@ async function fetchSections() {
         }
     } catch (error) {
         console.error('Error fetching sections:', error);
+    } finally {
+        sectionsLoaded = true;
     }
 }
 
 // Call on page load
-fetchSections();
+sectionsLoadPromise = fetchSections();
+
+async function ensureSectionsLoaded() {
+    if (sectionsLoaded) return;
+    try {
+        if (!sectionsLoadPromise) sectionsLoadPromise = fetchSections();
+        await sectionsLoadPromise;
+    } catch {
+        // swallow; UI will handle empty results
+    }
+}
+
+function normalizeGradeLevel(value) {
+    return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function getSectionField(section, field) {
+    // Handle both camelCase and PascalCase JSON
+    return section?.[field] ?? section?.[field[0].toUpperCase() + field.slice(1)];
+}
+
+async function fetchSectionsByGrade(gradeLevel) {
+    const grade = String(gradeLevel || '').trim();
+    if (!grade) return [];
+
+    // Prefer server-side filtering to avoid relying on initial /sections load.
+    const candidates = [grade];
+    const m = grade.match(/\bgrade\s*(\d+)\b/i);
+    if (m?.[1]) {
+        const num = m[1];
+        candidates.push(num);
+        candidates.push(`Grade${num}`);
+        candidates.push(`grade ${num}`);
+        candidates.push(`GRADE ${num}`);
+    }
+
+    for (const g of candidates) {
+        try {
+            const res = await fetch(`${API_BASE}/sections/by-grade/${encodeURIComponent(g)}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) return data;
+                if (Array.isArray(data) && candidates.length === 1) return data;
+            }
+        } catch (e) {
+            console.error('Error fetching sections by grade:', e);
+        }
+    }
+
+    return [];
+}
 
 // ============================================
 // LOGIN HANDLER
@@ -179,29 +233,46 @@ document.getElementById('roleSelect').addEventListener('change', function() {
 // ============================================
 // GRADE LEVEL SELECT - Filter Sections
 // ============================================
-document.getElementById('gradeLevelSelect').addEventListener('change', function() {
+document.getElementById('gradeLevelSelect').addEventListener('change', async function() {
     const gradeLevel = this.value;
     const sectionSelect = document.getElementById('sectionSelect');
-    
-    // Clear and reset section dropdown
+
+    sectionSelect.disabled = true;
     sectionSelect.innerHTML = '<option value="" hidden>--Select Section--</option>';
-    
-    if (gradeLevel) {
-        // Filter sections by grade level
-        const filteredSections = sectionsData.filter(s => s.gradeLevel === gradeLevel);
-        
-        // Add options
-        filteredSections.forEach(section => {
-            const option = document.createElement('option');
-            option.value = section.id;
-            option.textContent = section.name;
-            sectionSelect.appendChild(option);
-        });
-        
-        // Enable section dropdown
-        sectionSelect.disabled = false;
-    } else {
-        sectionSelect.disabled = true;
+
+    if (!gradeLevel) return;
+
+    // Show a lightweight loading state in the dropdown
+    sectionSelect.innerHTML = '<option value="" hidden>Loading sections...</option>';
+
+    let sections = await fetchSectionsByGrade(gradeLevel);
+
+    // Fallback: if the by-grade endpoint fails/returns empty, use the cached /sections list.
+    if (!Array.isArray(sections) || sections.length === 0) {
+        await ensureSectionsLoaded();
+        const target = normalizeGradeLevel(gradeLevel);
+        sections = (sectionsData || []).filter(s => normalizeGradeLevel(getSectionField(s, 'gradeLevel')) === target);
+    }
+
+    // Reset options
+    sectionSelect.innerHTML = '<option value="" hidden>--Select Section--</option>';
+
+    (sections || []).forEach(section => {
+        const id = getSectionField(section, 'id');
+        const name = getSectionField(section, 'name');
+        if (id == null || !name) return;
+
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = name;
+        sectionSelect.appendChild(option);
+    });
+
+    const hasOptions = sectionSelect.querySelectorAll('option').length > 1;
+    sectionSelect.disabled = !hasOptions;
+
+    if (!hasOptions) {
+        sectionSelect.innerHTML = '<option value="" hidden>No sections available</option>';
     }
 });
 

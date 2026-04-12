@@ -71,7 +71,8 @@ namespace AppointmentSystemAPI.Controllers
                         a.Notes,
                         a.CreatedAt,
                         TeacherName = teacher.Name,
-                        TeacherEmail = teacher.Email
+                        TeacherEmail = teacher.Email,
+                        TeacherProfilePicture = teacher.ProfilePicture
                     }
                 )
                 .OrderByDescending(a => a.AppointmentDate)
@@ -89,7 +90,8 @@ namespace AppointmentSystemAPI.Controllers
                 notes = a.Notes,
                 createdAt = a.CreatedAt.ToString("dd-MMM-yyyy"),
                 teacherName = a.TeacherName,
-                teacherEmail = a.TeacherEmail
+                teacherEmail = a.TeacherEmail,
+                teacherProfilePicture = a.TeacherProfilePicture
             });
 
             return Ok(result);
@@ -478,7 +480,8 @@ namespace AppointmentSystemAPI.Controllers
                         a.CreatedAt,
                         StudentName = student.Name,
                         StudentEmail = student.Email,
-                        student.SectionId
+                        student.SectionId,
+                        StudentProfilePicture = student.ProfilePicture
                     }
                 )
                 .GroupJoin(
@@ -502,6 +505,7 @@ namespace AppointmentSystemAPI.Controllers
                         x.a.StudentName,
                         x.a.StudentEmail,
                         x.a.SectionId,
+                        x.a.StudentProfilePicture,
                         SectionName = section != null ? section.Name : "N/A",
                         GradeLevel = section != null && !string.IsNullOrWhiteSpace(section.GradeLevel) ? section.GradeLevel : "N/A"
                     }
@@ -528,7 +532,8 @@ namespace AppointmentSystemAPI.Controllers
                     reason = a.Reason,
                     notes = a.Notes,
                     createdAt = a.CreatedAt.ToString("dd-MMM-yyyy"),
-                    studentEmail = a.StudentEmail
+                    studentEmail = a.StudentEmail,
+                    studentProfilePicture = a.StudentProfilePicture
                 };
             });
 

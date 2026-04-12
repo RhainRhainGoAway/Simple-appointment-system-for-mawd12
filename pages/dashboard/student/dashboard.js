@@ -113,9 +113,11 @@ async function loadNotifications() {
 
         container.innerHTML = recent.map(a => {
             const statusText = getStatusNotificationTextForStudent(a.status);
+            const avatarSrc = a.teacherProfilePicture || '/appointment_system/assets/logo-0.png';
             const meta = `${a.teacherName || 'Teacher'} • ${a.appointmentDate || ''} • ${a.startTime || ''} - ${a.endTime || ''}`.trim();
             return `
                 <div class="notification-item">
+                    <img class="notification-avatar" src="${avatarSrc}" alt="Profile">
                     <div>
                         <p class="title">${escapeHtml(statusText || '')}</p>
                         <p class="meta">${escapeHtml(meta)}</p>
