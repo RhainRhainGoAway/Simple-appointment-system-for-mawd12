@@ -44,28 +44,6 @@ function initSidebarCloseOnNavigation() {
     const sidebar = document.querySelector('.sidebar');
     if (!sidebar) return;
 
-    const closeSidebarSmooth = () => {
-        // If already closed, ensure final collapsed layout.
-        if (sidebar.classList.contains('close')) {
-            sidebar.classList.add('is-collapsed');
-            localStorage.setItem('sidebarClosed', true);
-            return;
-        }
-
-        sidebar.classList.add('close');
-        localStorage.setItem('sidebarClosed', true);
-
-        const onTransitionEnd = (event) => {
-            if (event.propertyName !== 'width') return;
-            sidebar.removeEventListener('transitionend', onTransitionEnd);
-            if (sidebar.classList.contains('close')) {
-                sidebar.classList.add('is-collapsed');
-            }
-        };
-
-        sidebar.addEventListener('transitionend', onTransitionEnd);
-    };
-
     const isNewTabIntent = (event, link) => {
         if (!event) return false;
         if (event.metaKey || event.ctrlKey || event.shiftKey) return true; // Cmd/Ctrl/Shift click
@@ -82,7 +60,9 @@ function initSidebarCloseOnNavigation() {
         if (!href || href === '#' || href.startsWith('#') || href.toLowerCase().startsWith('javascript:')) return;
         if (isNewTabIntent(event, link)) return;
 
-        closeSidebarSmooth();
+        // Don't visually collapse on click (prevents a 1-frame "snap");
+        // just persist the preference so the next page starts closed.
+        localStorage.setItem('sidebarClosed', true);
     };
 
     sidebar.addEventListener('click', onNavClick);
