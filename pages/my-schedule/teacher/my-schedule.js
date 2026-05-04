@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             return { html: `<span>${label}</span>` };
         },
         slotMinTime: '07:00:00',
-        slotMaxTime: '18:00:00',
+        slotMaxTime: '20:00:00',
         weekends: false,
         allDaySlot: false,
         height: 'auto',

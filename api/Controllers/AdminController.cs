@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AppointmentSystemAPI.Data;
+using AppointmentSystemAPI.Services;
 
 namespace AppointmentSystemAPI.Controllers
 {
@@ -11,12 +12,14 @@ namespace AppointmentSystemAPI.Controllers
     public class AdminController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly PushNotificationService _push;
 
         private const int GraceMinutesAfterAppointment = 5;
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(ApplicationDbContext context, PushNotificationService push)
         {
             _context = context;
+            _push = push;
         }
 
         // ============================================
@@ -47,14 +50,28 @@ namespace AppointmentSystemAPI.Controllers
         }
 
         // ============================================
-        // 2) Teachers list + consulted minutes (this week)
+        // 2) Teachers list + consulted minutes (by week)
         // ============================================
-        // Week resets every Sunday (week starts on Sunday 00:00)
-        // GET: api/admin/teachers
+        // Week starts on Monday and counts Mon–Fri only (same as Monitor Schedule)
+        // GET: api/admin/teachers?start=2026-04-20
         [HttpGet("teachers")]
-        public async Task<IActionResult> GetTeachers()
+        public async Task<IActionResult> GetTeachers([FromQuery] string? start = null)
         {
-            var (weekStart, weekEndExclusive) = GetSundayWeekWindow(DateTime.Today);
+            DateOnly weekStart;
+            DateOnly weekEndExclusive;
+
+            if (string.IsNullOrWhiteSpace(start))
+            {
+                weekStart = GetActiveWeekStart(DateOnly.FromDateTime(DateTime.Now));
+                weekEndExclusive = weekStart.AddDays(5);
+            }
+            else
+            {
+                if (!DateOnly.TryParse(start, out weekStart))
+                    return BadRequest(new { message = "Invalid start date" });
+
+                weekEndExclusive = weekStart.AddDays(5);
+            }
 
             var teachers = await _context.Users
                 .Where(u => u.Role == "teacher")
@@ -70,9 +87,8 @@ namespace AppointmentSystemAPI.Controllers
 
             var accepted = await _context.Appointments
                 .Where(a => a.Status == "accepted")
-                .Where(a => a.AppointmentDate >= DateOnly.FromDateTime(weekStart)
-                    && a.AppointmentDate < DateOnly.FromDateTime(weekEndExclusive))
-                .Select(a => new { a.TeacherId, a.StartTime, a.EndTime })
+                .Where(a => a.AppointmentDate >= weekStart && a.AppointmentDate < weekEndExclusive)
+                .Select(a => new { a.TeacherId, a.AppointmentDate, a.StartTime, a.EndTime })
                 .ToListAsync();
 
             var minutesByTeacher = accepted
@@ -82,13 +98,38 @@ namespace AppointmentSystemAPI.Controllers
                     g => (int)Math.Max(0, Math.Round(g.Sum(x => (x.EndTime.ToTimeSpan() - x.StartTime.ToTimeSpan()).TotalMinutes)))
                 );
 
-            var result = teachers.Select(t => new
+            var dailyMinutesByTeacher = accepted
+                .GroupBy(a => a.TeacherId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g
+                        .GroupBy(x => x.AppointmentDate.DayOfWeek)
+                        .ToDictionary(
+                            gg => gg.Key,
+                            gg => (int)Math.Max(0, Math.Round(gg.Sum(x => (x.EndTime.ToTimeSpan() - x.StartTime.ToTimeSpan()).TotalMinutes)))
+                        )
+                );
+
+            var result = teachers.Select(t =>
             {
-                id = t.Id,
-                name = t.Name,
-                email = t.Email,
-                profilePicture = t.ProfilePicture,
-                weeklyConsultedMinutes = minutesByTeacher.TryGetValue(t.Id, out var mins) ? mins : 0
+                dailyMinutesByTeacher.TryGetValue(t.Id, out var days);
+
+                return new
+                {
+                    id = t.Id,
+                    name = t.Name,
+                    email = t.Email,
+                    profilePicture = t.ProfilePicture,
+                    weeklyConsultedMinutes = minutesByTeacher.TryGetValue(t.Id, out var mins) ? mins : 0,
+                    dailyConsultedMinutes = new
+                    {
+                        monday = days != null && days.TryGetValue(DayOfWeek.Monday, out var mon) ? mon : 0,
+                        tuesday = days != null && days.TryGetValue(DayOfWeek.Tuesday, out var tue) ? tue : 0,
+                        wednesday = days != null && days.TryGetValue(DayOfWeek.Wednesday, out var wed) ? wed : 0,
+                        thursday = days != null && days.TryGetValue(DayOfWeek.Thursday, out var thu) ? thu : 0,
+                        friday = days != null && days.TryGetValue(DayOfWeek.Friday, out var fri) ? fri : 0
+                    }
+                };
             });
 
             return Ok(result);
@@ -341,6 +382,31 @@ namespace AppointmentSystemAPI.Controllers
             appointment.Status = "cancelled";
             appointment.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
+
+            try
+            {
+                await _push.SendToUserAsync(
+                    appointment.StudentId,
+                    new PushPayload(
+                        "Appointment cancelled",
+                        "An accepted meeting was cancelled.",
+                        "/appointment_system/pages/dashboard/student/dashboard.html",
+                        $"appointment-cancelled-{appointment.Id}"),
+                    HttpContext.RequestAborted);
+
+                await _push.SendToUserAsync(
+                    appointment.TeacherId,
+                    new PushPayload(
+                        "Appointment cancelled",
+                        "An accepted meeting was cancelled.",
+                        "/appointment_system/pages/dashboard/teacher/dashboard.html",
+                        $"appointment-cancelled-{appointment.Id}"),
+                    HttpContext.RequestAborted);
+            }
+            catch
+            {
+                // best-effort
+            }
 
             return Ok(new { message = "Appointment cancelled successfully" });
         }

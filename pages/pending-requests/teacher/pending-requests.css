@@ -64,6 +64,9 @@
     padding: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     overflow: hidden;
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ==================== TABLE ==================== */
@@ -116,6 +119,7 @@
     font-size: 14px;
     color: #334155;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 /* ==================== STATUS BADGE ==================== */
@@ -157,6 +161,11 @@
     justify-content: center;
     gap: 8px;
     flex-wrap: nowrap;
+}
+
+.btn-accept,
+.btn-decline {
+    white-space: nowrap;
 }
 
 /* ==================== EMPTY ROW (TABLE) ==================== */
@@ -276,6 +285,12 @@
     align-items: center;
     gap: 4px;
     margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        min-height: auto;
+    }
 }
 
 .page-btn {

@@ -1,6 +1,223 @@
 @import url('../students/students.css');
 
+/* Match other admin pages: pagination bottom-right */
+.pagination-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    margin-top: 16px;
+}
+
+/* Keep pagination from jumping when a page has few rows */
+.table-container {
+    min-height: 620px;
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        min-height: auto;
+    }
+}
+
+/* Match Monitor Schedule date navigation styling */
+.date-nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.date-nav-btn:hover {
+    background: #f8f9fa;
+    color: #1f2937;
+}
+
+.date-nav-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+}
+
+.date-range i {
+    color: #64748b;
+}
+
+.date-range span {
+    font-weight: 500;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+/* Match Monitor Schedule search bar styling */
+.search-bar {
+    position: relative;
+    width: 260px;
+    max-width: 100%;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 10px 40px 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.search-bar input:focus {
+    border-color: #1570EF;
+}
+
+.search-bar i {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 18px;
+    pointer-events: none;
+}
+
 /* Teachers table tweaks */
+.pending-table {
+    table-layout: fixed;
+}
+
+.pending-table thead th,
+.pending-table tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pending-table thead th:nth-child(1) {
+    width: 30%;
+}
+
+.pending-table thead th:nth-child(2) {
+    width: 50%;
+}
+
+.pending-table thead th:nth-child(3) {
+    width: 20%;
+}
+
 .pending-table tbody td:nth-child(3) {
     font-weight: 700;
+}
+
+/* Eye icon button (match Pending Requests) */
+.btn-view {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 20px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.btn-view:hover {
+    background: #f1f5f9;
+    color: #1a1a2e;
+}
+
+/* Prevent icon from being clipped in the minutes column */
+.pending-table tbody td:nth-child(3),
+.pending-table thead th:nth-child(3) {
+    overflow: visible;
+}
+
+/* ==================== DETAILS MODAL (match Pending Requests) ==================== */
+#detailsModal .modal-content {
+    border-radius: 16px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+#detailsModal .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#detailsModal .modal-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+#detailsModal .modal-body {
+    padding: 20px 24px 24px;
+}
+
+#detailsModalBody .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#detailsModalBody .detail-row:last-child {
+    border-bottom: none;
+}
+
+#detailsModalBody .detail-label {
+    font-weight: 600;
+    color: #3b82f6;
+    min-width: 140px;
+    font-size: 14px;
+}
+
+#detailsModalBody .detail-value {
+    color: #1f2937;
+    font-size: 14px;
+    text-align: right;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+@media (max-width: 768px) {
+    #detailsModalBody .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    #detailsModalBody .detail-label {
+        min-width: 0;
+    }
+
+    #detailsModalBody .detail-value {
+        text-align: left;
+        width: 100%;
+    }
 }

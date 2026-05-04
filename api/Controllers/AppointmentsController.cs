@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using AppointmentSystemAPI.Data;
 using AppointmentSystemAPI.Models;
 using System.Collections.Concurrent;
+using AppointmentSystemAPI.Services;
 
 namespace AppointmentSystemAPI.Controllers
 {
@@ -13,14 +14,16 @@ namespace AppointmentSystemAPI.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly PushNotificationService _push;
 
         // Prevent accidental duplicate inserts under concurrency (e.g., double-clicking the Book button).
         // This is a per-process lock; for full multi-instance safety, add a DB unique constraint.
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> SlotLocks = new();
 
-        public AppointmentsController(ApplicationDbContext context)
+        public AppointmentsController(ApplicationDbContext context, PushNotificationService push)
         {
             _context = context;
+            _push = push;
         }
 
         private int GetUserId()
@@ -203,8 +206,26 @@ namespace AppointmentSystemAPI.Controllers
             if (appointment.Status != "pending")
                 return BadRequest(new { message = "Only pending appointments can be cancelled" });
 
-            _context.Appointments.Remove(appointment);
+            appointment.Status = "cancelled";
+            appointment.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
+
+            // Notify teacher that the student cancelled the request
+            try
+            {
+                await _push.SendToUserAsync(
+                    appointment.TeacherId,
+                    new PushPayload(
+                        "Appointment cancelled",
+                        "A student cancelled a pending appointment request.",
+                        "/appointment_system/pages/dashboard/teacher/dashboard.html",
+                        $"appointment-cancelled-{appointment.Id}"),
+                    HttpContext.RequestAborted);
+            }
+            catch
+            {
+                // best-effort
+            }
 
             return Ok(new { message = "Appointment cancelled successfully" });
         }
@@ -332,6 +353,23 @@ namespace AppointmentSystemAPI.Controllers
 
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
+
+            // Notify the teacher immediately that a student requested an appointment
+            try
+            {
+                await _push.SendToUserAsync(
+                    appointment.TeacherId,
+                    new PushPayload(
+                        "New appointment request",
+                        "A student requested an appointment with you.",
+                        "/appointment_system/pages/dashboard/teacher/dashboard.html",
+                        $"appointment-requested-{appointment.Id}"),
+                    HttpContext.RequestAborted);
+            }
+            catch
+            {
+                // best-effort
+            }
 
             return Ok(new { message = "Appointment created successfully", id = appointment.Id });
             }
@@ -660,6 +698,23 @@ namespace AppointmentSystemAPI.Controllers
             appointment.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
 
+            // Notify the student that the request was accepted
+            try
+            {
+                await _push.SendToUserAsync(
+                    appointment.StudentId,
+                    new PushPayload(
+                        "Appointment accepted",
+                        "Your appointment request was accepted.",
+                        "/appointment_system/pages/dashboard/student/dashboard.html",
+                        $"appointment-accepted-{appointment.Id}"),
+                    HttpContext.RequestAborted);
+            }
+            catch
+            {
+                // best-effort
+            }
+
             return Ok(new { message = "Appointment accepted" });
         }
 
@@ -682,6 +737,23 @@ namespace AppointmentSystemAPI.Controllers
             appointment.Status = "declined";
             appointment.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
+
+            // Notify the student that the request was declined
+            try
+            {
+                await _push.SendToUserAsync(
+                    appointment.StudentId,
+                    new PushPayload(
+                        "Appointment declined",
+                        "Your appointment request was declined.",
+                        "/appointment_system/pages/dashboard/student/dashboard.html",
+                        $"appointment-declined-{appointment.Id}"),
+                    HttpContext.RequestAborted);
+            }
+            catch
+            {
+                // best-effort
+            }
 
             return Ok(new { message = "Appointment declined" });
         }

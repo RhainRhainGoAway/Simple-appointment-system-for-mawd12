@@ -148,3 +148,6 @@ D:/xampp/htdocs/appointment_system/api/obj/Debug/net9.0/ref/AppointmentSystemAPI
 /Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/obj/Debug/net9.0/AppointmentSystemAPI.pdb
 /Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/obj/Debug/net9.0/AppointmentSystemAPI.genruntimeconfig.cache
 /Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/obj/Debug/net9.0/ref/AppointmentSystemAPI.dll
+/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/bin/Debug/net9.0/Newtonsoft.Json.dll
+/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/bin/Debug/net9.0/BouncyCastle.Crypto.dll
+/Applications/XAMPP/xamppfiles/htdocs/appointment_system/api/bin/Debug/net9.0/WebPush.dll

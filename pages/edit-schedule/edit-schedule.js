@@ -34,6 +34,8 @@ let scheduleState = {
 // TIME OPTION HELPERS
 // ============================================
 
+const MINUTE_STEP = 5;
+
 function normalizeTimeStr(value) {
     if (value == null) return '00:00';
     const str = String(value).trim();
@@ -74,6 +76,23 @@ function composeTimeStr(hour, minute) {
     return `${hh}:${mm}`;
 }
 
+function snapMinuteToStep(minuteValue, step = MINUTE_STEP) {
+    const minute = Number(minuteValue);
+    if (!Number.isFinite(minute) || !Number.isFinite(step) || step <= 0) {
+        return normalizeTwoDigit(minuteValue);
+    }
+
+    const snapped = Math.max(0, Math.min(59, Math.floor(minute / step) * step));
+    return String(snapped).padStart(2, '0');
+}
+
+function snapTimeStrToMinuteStep(timeStr, step = MINUTE_STEP) {
+    const { hour, minute } = splitTimeStr(timeStr);
+    if (hour === '00') return '00:00';
+    const mm = snapMinuteToStep(minute, step);
+    return `${hour}:${mm}`;
+}
+
 function buildHourOptions12(selectedHour) {
     const selected = normalizeTwoDigit(selectedHour ?? '00');
     const options = [{ value: '00', label: 'Select' }];
@@ -90,7 +109,8 @@ function buildHourOptions12(selectedHour) {
 function buildMinuteOptions(selectedMinute) {
     const selected = normalizeTwoDigit(selectedMinute ?? '00');
     const options = [];
-    for (let minute = 0; minute <= 59; minute++) {
+
+    for (let minute = 0; minute <= 55; minute += MINUTE_STEP) {
         const value = String(minute).padStart(2, '0');
         options.push({ value, label: value });
     }
@@ -264,6 +284,10 @@ function renderTimeSlots(day) {
     
     // Generate HTML for each slot
     slots.forEach((slot, index) => {
+        // Enforce 5-minute increments in state/UI
+        slot.startTime = snapTimeStrToMinuteStep(slot.startTime);
+        slot.endTime = snapTimeStrToMinuteStep(slot.endTime);
+
         const start = splitTimeStr(slot.startTime);
         const end = splitTimeStr(slot.endTime);
         // HTML template para sa isang time slot row
@@ -277,6 +301,7 @@ function renderTimeSlots(day) {
                     <select class="time-select time-hour-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'startTime', 'hour', this.value)" aria-label="Start hour">
                         ${buildHourOptions12(start.hour)}
                     </select>
+                    <span class="time-separator time-colon">:</span>
                     <select class="time-select time-minute-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'startTime', 'minute', this.value)" aria-label="Start minute">
                         ${buildMinuteOptions(start.minute)}
                     </select>
@@ -290,6 +315,7 @@ function renderTimeSlots(day) {
                     <select class="time-select time-hour-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'endTime', 'hour', this.value)" aria-label="End hour">
                         ${buildHourOptions12(end.hour)}
                     </select>
+                    <span class="time-separator time-colon">:</span>
                     <select class="time-select time-minute-select" onchange="updateSlotTimePart('${day}', ${slot.id}, 'endTime', 'minute', this.value)" aria-label="End minute">
                         ${buildMinuteOptions(end.minute)}
                     </select>
@@ -564,6 +590,7 @@ function addSpecificTimeSlotRow() {
             <select class="time-select time-hour-select" aria-label="Start hour">
                 ${buildHourOptions12('00')}
             </select>
+            <span class="time-separator time-colon">:</span>
             <select class="time-select time-minute-select" aria-label="Start minute">
                 ${buildMinuteOptions('00')}
             </select>
@@ -575,6 +602,7 @@ function addSpecificTimeSlotRow() {
             <select class="time-select time-hour-select" aria-label="End hour">
                 ${buildHourOptions12('00')}
             </select>
+            <span class="time-separator time-colon">:</span>
             <select class="time-select time-minute-select" aria-label="End minute">
                 ${buildMinuteOptions('00')}
             </select>
@@ -713,7 +741,9 @@ function renderSpecificDatesList() {
             timesHtml = '<span class="closed-badge">Closed</span>';
         } else {
             item.slots.forEach(slot => {
-                timesHtml += `<span class="specific-time-pill">${slot.startTime} ${slot.startPeriod} - ${slot.endTime} ${slot.endPeriod}</span>`;
+                const startLabel = snapTimeStrToMinuteStep(slot.startTime);
+                const endLabel = snapTimeStrToMinuteStep(slot.endTime);
+                timesHtml += `<span class="specific-time-pill">${startLabel} ${slot.startPeriod} - ${endLabel} ${slot.endPeriod}</span>`;
             });
         }
         
@@ -768,9 +798,9 @@ async function loadSavedSchedule() {
                 scheduleState.weekly[day].enabled = dayData.enabled;
                 scheduleState.weekly[day].slots = (dayData.slots || []).map(s => ({
                     id: Date.now() + Math.random(),
-                    startTime: s.startTime,
+                    startTime: snapTimeStrToMinuteStep(s.startTime),
                     startPeriod: s.startPeriod,
-                    endTime: s.endTime,
+                    endTime: snapTimeStrToMinuteStep(s.endTime),
                     endPeriod: s.endPeriod,
                     isPreferred: s.isPreferred
                 }));
@@ -796,9 +826,9 @@ async function loadSavedSchedule() {
                 }
                 if (!item.isClosed && item.startTime && item.endTime) {
                     grouped[item.date].slots.push({
-                        startTime: item.startTime,
+                        startTime: snapTimeStrToMinuteStep(item.startTime),
                         startPeriod: item.startPeriod,
-                        endTime: item.endTime,
+                        endTime: snapTimeStrToMinuteStep(item.endTime),
                         endPeriod: item.endPeriod
                     });
                 }

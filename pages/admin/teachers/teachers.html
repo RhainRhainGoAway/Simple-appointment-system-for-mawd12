@@ -21,15 +21,32 @@
     <div id="sidebar-container"></div>
 
     <section class="home">
-        <div class="header-row">
-            <div class="page-header">
-                <h2>Teachers</h2>
-                <p>List of Teachers and Weekly consulted minutes</p>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold mb-0">Teachers</h2>
+                <p class="text-muted mb-0">List of teachers and consulted minutes per week</p>
             </div>
 
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Search">
-                <i class='bx bx-search'></i>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <button class="btn btn-outline-secondary rounded-pill px-4" onclick="goToToday()">Today</button>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button class="date-nav-btn" onclick="previousWeek()">
+                        <i class='bx bx-chevron-left'></i>
+                    </button>
+                    <div class="date-range">
+                        <i class='bx bx-calendar'></i>
+                        <span id="dateRangeText">—</span>
+                    </div>
+                    <button class="date-nav-btn" id="nextWeekBtn" onclick="nextWeek()">
+                        <i class='bx bx-chevron-right'></i>
+                    </button>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search">
+                    <i class='bx bx-search'></i>
+                </div>
             </div>
         </div>
 
@@ -39,7 +56,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Consulted Minutes (This Week)</th>
+                        <th>Consulted Minutes</th>
                     </tr>
                 </thead>
                 <tbody id="teachersTableBody"></tbody>
@@ -60,6 +77,19 @@
 
         <div class="pagination-container" id="paginationContainer"></div>
     </section>
+
+    <!-- View Details Modal (match Pending Requests design) -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Consulted Minutes Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="detailsModalBody"></div>
+            </div>
+        </div>
+    </div>
 
     <script src="/appointment_system/shared/js/load-sidebar-admin.js"></script>
     <script src="/appointment_system/shared/js/alerts.js"></script>

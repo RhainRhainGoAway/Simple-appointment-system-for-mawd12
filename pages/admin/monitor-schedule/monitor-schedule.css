@@ -1,5 +1,12 @@
 @import url('../../book-schedule/book-schedule.css');
 
+/* Evenly distribute the 4 teacher rows to fill the 620px card height */
+@media (min-width: 769px) {
+    .schedule-table tbody tr {
+        height: 140px;
+    }
+}
+
 /* Make slots clearly non-interactive for admin */
 .time-slot {
     cursor: default;

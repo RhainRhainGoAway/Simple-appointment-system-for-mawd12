@@ -105,11 +105,16 @@ function renderPagination() {
 
     let html = '';
 
+    const MAX_VISIBLE_PAGES = 5;
+    const maxStart = Math.max(1, totalPages - MAX_VISIBLE_PAGES + 1);
+    const startPage = Math.min(Math.max(1, currentPage), maxStart);
+    const endPage = Math.min(totalPages, startPage + MAX_VISIBLE_PAGES - 1);
+
     html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
                 <i class='bx bx-chevron-left'></i>
              </button>`;
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = startPage; i <= endPage; i++) {
         html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
     }
 

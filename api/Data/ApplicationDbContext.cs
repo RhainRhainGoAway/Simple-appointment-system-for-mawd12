@@ -14,5 +14,8 @@ namespace AppointmentSystemAPI.Data
         public DbSet<TeacherAvailability> TeacherAvailabilities { get; set; }
         public DbSet<TeacherDateOverride> TeacherDateOverrides { get; set; }
         public DbSet<ClassSchedule> ClassSchedules { get; set; }
+
+        public DbSet<UserPushSubscription> PushSubscriptions { get; set; }
+        public DbSet<AppointmentNotificationLog> AppointmentNotificationLogs { get; set; }
     }
 }

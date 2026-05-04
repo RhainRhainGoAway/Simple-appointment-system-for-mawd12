@@ -148,6 +148,12 @@
     font-weight: 500;
 }
 
+/* Tighten spacing so hour:minute reads naturally */
+.time-separator.time-colon {
+    margin: 0 -6px;
+    user-select: none;
+}
+
 .btn-icon {
     width: 32px;
     height: 32px;

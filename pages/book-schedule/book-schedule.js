@@ -30,9 +30,6 @@ function getMonday(date) {
     if (day === 0) {
         // Sunday -> next Monday
         d.setDate(d.getDate() + 1);
-    } else if (day === 5) {
-        // Friday -> next Monday (book for next week)
-        d.setDate(d.getDate() + 3);
     } else if (day === 6) {
         // Saturday -> next Monday
         d.setDate(d.getDate() + 2);
@@ -270,11 +267,16 @@ function renderPagination(totalPages) {
 
     let html = '';
 
+    const MAX_VISIBLE_PAGES = 5;
+    const maxStart = Math.max(1, totalPages - MAX_VISIBLE_PAGES + 1);
+    const startPage = Math.min(Math.max(1, currentPage), maxStart);
+    const endPage = Math.min(totalPages, startPage + MAX_VISIBLE_PAGES - 1);
+
     html += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
                 <i class='bx bx-chevron-left'></i>
              </button>`;
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = startPage; i <= endPage; i++) {
         html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
     }
 

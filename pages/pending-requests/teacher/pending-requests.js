@@ -67,7 +67,7 @@ async function fetchRequests() {
             throw new Error('Failed to fetch pending requests');
         }
 
-        allRequests = await response.json();
+        allRequests = sortRequests(await response.json());
         filteredRequests = [...allRequests];
         currentPage = 1;
         render();
@@ -77,6 +77,102 @@ async function fetchRequests() {
         filteredRequests = [];
         render();
     }
+}
+
+function sortRequests(requests) {
+    const list = Array.isArray(requests) ? [...requests] : [];
+
+    const getCreatedTs = (row) => {
+        if (!row) return Number.NaN;
+        const raw = (
+            row.createdAt ??
+            row.created_at ??
+            row.requestedAt ??
+            row.requested_at ??
+            row.bookedAt ??
+            row.booked_at ??
+            row.dateCreated ??
+            row.date_created ??
+            row.created
+        );
+        if (!raw) return Number.NaN;
+        const ts = new Date(raw).getTime();
+        return Number.isNaN(ts) ? Number.NaN : ts;
+    };
+
+    const getTs = (row) => {
+        if (!row) return Number.NaN;
+
+        // Prefer date+startTime if available
+        const dateStr = (row.appointmentDate || row.appointment_date || '').toString().trim();
+        const timeStr = (row.startTime || row.start_time || '').toString().trim();
+
+        if (!dateStr) return Number.NaN;
+
+        // If the date looks ISO (YYYY-MM-DD), construct an ISO-ish datetime.
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr) && timeStr) {
+            const dt = new Date(`${dateStr}T${timeStr}`);
+            const ts = dt.getTime();
+            if (!Number.isNaN(ts)) return ts;
+        }
+
+        // Fallback: parse date loosely then apply time if present.
+        const base = new Date(dateStr);
+        if (!Number.isNaN(base.getTime())) {
+            if (timeStr && /^\d{1,2}:\d{2}/.test(timeStr)) {
+                const [hh, mm] = timeStr.split(':').map(v => parseInt(v, 10));
+                if (!Number.isNaN(hh) && !Number.isNaN(mm)) {
+                    base.setHours(hh, mm, 0, 0);
+                }
+            }
+            return base.getTime();
+        }
+
+        // Last resort: try date + time as a single string
+        if (timeStr) {
+            const dt = new Date(`${dateStr} ${timeStr}`);
+            const ts = dt.getTime();
+            if (!Number.isNaN(ts)) return ts;
+        }
+
+        return Number.NaN;
+    };
+
+    list.sort((a, b) => {
+        const aPending = (a?.status || '').toLowerCase() === 'pending';
+        const bPending = (b?.status || '').toLowerCase() === 'pending';
+        if (aPending !== bPending) return aPending ? -1 : 1;
+
+        // Pending: newest request first (createdAt if available, else highest id)
+        if (aPending && bPending) {
+            const aCreated = getCreatedTs(a);
+            const bCreated = getCreatedTs(b);
+            const aInvalid = Number.isNaN(aCreated);
+            const bInvalid = Number.isNaN(bCreated);
+            if (aInvalid !== bInvalid) return aInvalid ? 1 : -1;
+            if (!aInvalid && !bInvalid && aCreated !== bCreated) return bCreated - aCreated;
+
+            const aId = a?.id ?? 0;
+            const bId = b?.id ?? 0;
+            return bId - aId;
+        }
+
+        const aTs = getTs(a);
+        const bTs = getTs(b);
+
+        // History: newest first
+        const aInvalid = Number.isNaN(aTs);
+        const bInvalid = Number.isNaN(bTs);
+        if (aInvalid !== bInvalid) return aInvalid ? 1 : -1;
+        if (!aInvalid && !bInvalid && aTs !== bTs) return bTs - aTs;
+
+        // Final deterministic tie-breakers
+        const aId = a?.id ?? 0;
+        const bId = b?.id ?? 0;
+        return bId - aId;
+    });
+
+    return list;
 }
 
 // ============================================
@@ -159,11 +255,16 @@ function renderPagination() {
 
     let html = '';
 
+    const MAX_VISIBLE_PAGES = 5;
+    const maxStart = Math.max(1, totalPages - MAX_VISIBLE_PAGES + 1);
+    const startPage = Math.min(Math.max(1, currentPage), maxStart);
+    const endPage = Math.min(totalPages, startPage + MAX_VISIBLE_PAGES - 1);
+
     html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
                 <i class='bx bx-chevron-left'></i>
              </button>`;
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = startPage; i <= endPage; i++) {
         html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
     }
 
@@ -229,8 +330,8 @@ function updateRequestStatus(id, newStatus) {
         return row;
     };
 
-    allRequests = allRequests.map(updateRow);
-    filteredRequests = filteredRequests.map(updateRow);
+    allRequests = sortRequests(allRequests.map(updateRow));
+    filteredRequests = sortRequests(filteredRequests.map(updateRow));
 }
 
 // ============================================

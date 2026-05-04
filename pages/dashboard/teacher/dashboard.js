@@ -58,10 +58,22 @@ document.addEventListener('DOMContentLoaded', function() {
 let pendingStudentsCount = 0;
 
 async function initDashboard() {
+    setupPushSubscription();
     await loadStats();
     await loadNotifications();
     pendingStudentsCount = await loadPendingStudents();
     await loadHistory();
+}
+
+function setupPushSubscription() {
+    const subscribeFn = (typeof ensurePushSubscribed === 'function') ? ensurePushSubscribed : null;
+
+    if (!subscribeFn) return;
+    if (!('Notification' in window)) return;
+
+    if (Notification.permission === 'granted') {
+        Promise.resolve(subscribeFn()).catch(() => {});
+    }
 }
 
 async function loadStats() {
@@ -86,7 +98,7 @@ function getStatusNotificationTextForTeacher(status) {
     const normalized = String(status || '').trim().toLowerCase();
     if (normalized === 'accepted') return 'Accepted by teacher';
     if (normalized === 'declined') return 'Declined by teacher';
-    if (normalized === 'cancelled') return 'Cancelled by admin';
+    if (normalized === 'cancelled') return 'Cancelled';
     return null;
 }
 

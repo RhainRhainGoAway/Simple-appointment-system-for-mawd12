@@ -2,8 +2,6 @@
     background-color: #f8f9fa;
     min-height: 100vh;
     padding: 24px 32px;
-    display: flex;
-    flex-direction: column;
 }
 
 /* ==================== SEARCH BAR (match Pending Requests) ==================== */
@@ -125,14 +123,29 @@
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    min-height: 620px;
+}
+
+@media (max-width: 768px) {
+    .schedule-table {
+        min-height: auto;
+    }
 }
 
 .schedule-table .table {
-    flex: 1;
     margin-bottom: 0;
+}
+
+/* Evenly distribute the 4 teacher rows to fill the 620px card height */
+@media (min-width: 769px) {
+    .schedule-table .table {
+        height: 100%;
+    }
+
+    .schedule-table tbody tr {
+        /* 620px card - ~56px header, divided by 4 rows-per-page */
+        height: 140px;
+    }
 }
 
 .schedule-table thead th {
@@ -149,9 +162,6 @@
     text-align: left;
 }
 
-.schedule-table tbody {
-    flex: 1;
-}
 
 .schedule-table tbody td {
     padding: 24px 16px;
@@ -214,6 +224,7 @@
     justify-content: flex-end;
     align-items: center;
     gap: 4px;
+    margin-top: 16px;
 }
 
 .page-btn {

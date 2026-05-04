@@ -20,26 +20,92 @@ namespace AppointmentSystemAPI.Controllers
             _context = context;
         }
 
+        private static DateTime GetManilaNow()
+        {
+            // We standardize schedule week-assignment to Asia/Manila.
+            // Timezone IDs differ by OS; try common ones.
+            var nowUtc = DateTime.UtcNow;
+            string[] tzIds = { "Asia/Manila", "Philippine Standard Time", "Singapore Standard Time" };
+
+            foreach (var tzId in tzIds)
+            {
+                try
+                {
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById(tzId);
+                    return TimeZoneInfo.ConvertTimeFromUtc(nowUtc, tz);
+                }
+                catch (TimeZoneNotFoundException) { }
+                catch (InvalidTimeZoneException) { }
+            }
+
+            // Fallback: server local clock.
+            return DateTime.Now;
+        }
+
+        private static DateOnly GetWeekStartMonday(DateOnly date)
+        {
+            var dow = date.DayOfWeek;
+            var daysSinceMonday = ((int)dow - (int)DayOfWeek.Monday);
+            if (daysSinceMonday < 0) daysSinceMonday += 7; // Sunday => 6
+            return date.AddDays(-daysSinceMonday);
+        }
+
+        private static int DayOfWeekOffset(string dayOfWeek)
+        {
+            return (dayOfWeek ?? string.Empty).Trim().ToLowerInvariant() switch
+            {
+                "mon" => 0,
+                "tue" => 1,
+                "wed" => 2,
+                "thu" => 3,
+                "fri" => 4,
+                _ => -1
+            };
+        }
+
+        private static DateOnly ComputeEffectiveWeekStart(DateTime createdAtManila, string dayOfWeek, TimeOnly slotStart)
+        {
+            // Weekly availability is NOT recurring forever.
+            // Each saved weekly slot is assigned to exactly ONE week:
+            // - Normally: the week containing the save timestamp
+            // - If saved on weekend: next week only
+            // - If the slot's first occurrence in that base week is already past at save time: push to next week
+
+            var createdAtDate = DateOnly.FromDateTime(createdAtManila);
+            var createdDow = createdAtManila.DayOfWeek;
+
+            var baseWeekStart = GetWeekStartMonday(createdAtDate);
+
+            // Weekend saves target next week.
+            if (createdDow == DayOfWeek.Saturday || createdDow == DayOfWeek.Sunday)
+                baseWeekStart = baseWeekStart.AddDays(7);
+
+            var offset = DayOfWeekOffset(dayOfWeek);
+            if (offset < 0) return baseWeekStart; // Unknown day; best-effort.
+
+            var slotDateInBaseWeek = baseWeekStart.AddDays(offset);
+            var slotDateTimeInBaseWeek = slotDateInBaseWeek.ToDateTime(slotStart);
+
+            // If the slot start is not strictly in the future at save-time, push it to next week.
+            if (slotDateTimeInBaseWeek <= createdAtManila)
+                return baseWeekStart.AddDays(7);
+
+            return baseWeekStart;
+        }
+
         private int GetUserId()
         {
             var claim = User.FindFirst("UserId")?.Value;
             return claim != null ? int.Parse(claim) : 0;
         }
 
-        private static DateOnly GetActiveWeekStart(DateOnly today)
+        private static DateOnly GetActiveWeekStart(DateOnly today) => GetWeekStartMonday(today);
+
+        private static bool IsSlotInFuture(DateOnly slotDate, TimeOnly slotStart, DateOnly today, TimeOnly now)
         {
-            // Active week is the week we allow booking for.
-            // Mon-Thu => current week's Monday
-            // Fri/Sat/Sun => next week's Monday
-            var dow = today.DayOfWeek;
-
-            if (dow == DayOfWeek.Saturday) return today.AddDays(2);
-            if (dow == DayOfWeek.Sunday) return today.AddDays(1);
-            if (dow == DayOfWeek.Friday) return today.AddDays(3);
-
-            // Monday = 1 ... Thursday = 4
-            var daysSinceMonday = ((int)dow - (int)DayOfWeek.Monday);
-            return today.AddDays(-daysSinceMonday);
+            if (slotDate != today) return true;
+            // For "today", only allow slots that haven't started yet.
+            return slotStart > now;
         }
 
         // GET: api/teacheravailability/my
@@ -104,6 +170,8 @@ namespace AppointmentSystemAPI.Controllers
             var teacherId = GetUserId();
             if (teacherId == 0) return Unauthorized();
 
+            var manilaNow = GetManilaNow();
+
             // Remove old availability
             var oldAvailability = await _context.TeacherAvailabilities
                 .Where(ta => ta.TeacherId == teacherId).ToListAsync();
@@ -133,8 +201,8 @@ namespace AppointmentSystemAPI.Controllers
                             StartTime = startTime.Value,
                             EndTime = endTime.Value,
                             IsPreferred = slot.IsPreferred,
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now
+                            CreatedAt = manilaNow,
+                            UpdatedAt = manilaNow
                         });
                     }
                 }
@@ -154,8 +222,8 @@ namespace AppointmentSystemAPI.Controllers
                             TeacherId = teacherId,
                             SpecificDate = specificDate,
                             IsClosed = true,
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now
+                            CreatedAt = manilaNow,
+                            UpdatedAt = manilaNow
                         });
                     }
                     else if (sd.Slots != null)
@@ -173,8 +241,8 @@ namespace AppointmentSystemAPI.Controllers
                                 IsClosed = false,
                                 StartTime = startTime.Value,
                                 EndTime = endTime.Value,
-                                CreatedAt = DateTime.Now,
-                                UpdatedAt = DateTime.Now
+                                CreatedAt = manilaNow,
+                                UpdatedAt = manilaNow
                             });
                         }
                     }
@@ -193,11 +261,11 @@ namespace AppointmentSystemAPI.Controllers
             if (!DateOnly.TryParse(start, out var weekStart))
                 return BadRequest(new { message = "Invalid start date" });
 
-            // Weekly schedule (day-of-week) should only apply to the current "active" week,
-            // otherwise it repeats forever.
-            // Date-specific overrides are allowed for any requested week.
-            var activeWeekStart = GetActiveWeekStart(DateOnly.FromDateTime(DateTime.Now));
-            var includeWeeklySchedule = weekStart == activeWeekStart;
+            // Weekly schedule applies to exactly ONE computed week per saved slot.
+            // Past-time filtering for "today" is based on Asia/Manila.
+            var manilaNow = GetManilaNow();
+            var today = DateOnly.FromDateTime(manilaNow);
+            var now = TimeOnly.FromDateTime(manilaNow);
 
             // Get all teachers with their availability
             var teachers = await _context.Users
@@ -257,6 +325,13 @@ namespace AppointmentSystemAPI.Controllers
                                 .Where(s => s.end > s.start)
                                 .ToList();
 
+                            // If it's today and all slots have already started, treat as closed.
+                            if (currentDate == today && rawSlots.Count > 0 && !rawSlots.Any(s => s.start > now))
+                            {
+                                days.Add(new DayAvailabilityDto { Closed = true, FullyBooked = false, Slots = new List<SlotDto>() });
+                                continue;
+                            }
+
                             // Subtract booked slots
                             var availableSlots = new List<SlotDto>();
                             foreach (var slot in rawSlots)
@@ -264,6 +339,7 @@ namespace AppointmentSystemAPI.Controllers
                                 var remaining = SubtractBookedSlots(slot.start, slot.end, dayBookings);
                                 availableSlots.AddRange(remaining
                                     .Where(r => r.end > r.start)
+                                    .Where(r => IsSlotInFuture(currentDate, r.start, today, now))
                                     .Select(r => new SlotDto
                                     {
                                         StartTime = r.start.ToString("h:mm tt"),
@@ -278,14 +354,20 @@ namespace AppointmentSystemAPI.Controllers
                     }
                     else
                     {
-                        // Use weekly schedule only for the active week
-                        var rawSlots = includeWeeklySchedule
-                            ? teacherAvail
-                                .Where(a => a.DayOfWeek == dayName)
-                                .Select(a => (start: a.StartTime, end: a.EndTime))
-                                .Where(s => s.end > s.start)
-                                .ToList()
-                            : new List<(TimeOnly start, TimeOnly end)>();
+                        // Weekly schedule: include only slots whose effective week equals the requested week.
+                        var rawSlots = teacherAvail
+                            .Where(a => a.DayOfWeek == dayName)
+                            .Where(a => ComputeEffectiveWeekStart(a.CreatedAt, a.DayOfWeek, a.StartTime) == weekStart)
+                            .Select(a => (start: a.StartTime, end: a.EndTime))
+                            .Where(s => s.end > s.start)
+                            .ToList();
+
+                        // If it's today and all slots have already started, treat as closed.
+                        if (currentDate == today && rawSlots.Count > 0 && !rawSlots.Any(s => s.start > now))
+                        {
+                            days.Add(new DayAvailabilityDto { Closed = true, FullyBooked = false, Slots = new List<SlotDto>() });
+                            continue;
+                        }
 
                         // Subtract booked slots
                         var availableSlots = new List<SlotDto>();
@@ -294,6 +376,7 @@ namespace AppointmentSystemAPI.Controllers
                             var remaining = SubtractBookedSlots(slot.start, slot.end, dayBookings);
                             availableSlots.AddRange(remaining
                                 .Where(r => r.end > r.start)
+                                .Where(r => IsSlotInFuture(currentDate, r.start, today, now))
                                 .Select(r => new SlotDto
                                 {
                                     StartTime = r.start.ToString("h:mm tt"),

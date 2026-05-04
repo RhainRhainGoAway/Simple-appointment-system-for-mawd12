@@ -34,6 +34,92 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+function sortRequests(requests) {
+    const list = Array.isArray(requests) ? [...requests] : [];
+
+    const getCreatedTs = (row) => {
+        if (!row) return Number.NaN;
+        const raw = (
+            row.createdAt ??
+            row.created_at ??
+            row.requestedAt ??
+            row.requested_at ??
+            row.bookedAt ??
+            row.booked_at ??
+            row.dateCreated ??
+            row.date_created ??
+            row.created
+        );
+        if (!raw) return Number.NaN;
+        const ts = new Date(raw).getTime();
+        return Number.isNaN(ts) ? Number.NaN : ts;
+    };
+
+    const getAppointmentTs = (row) => {
+        if (!row) return Number.NaN;
+        const dateStr = (row.appointmentDate || row.appointment_date || '').toString().trim();
+        const timeStr = (row.startTime || row.start_time || '').toString().trim();
+        if (!dateStr) return Number.NaN;
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr) && timeStr) {
+            const ts = new Date(`${dateStr}T${timeStr}`).getTime();
+            if (!Number.isNaN(ts)) return ts;
+        }
+
+        const base = new Date(dateStr);
+        if (!Number.isNaN(base.getTime())) {
+            if (timeStr && /^\d{1,2}:\d{2}/.test(timeStr)) {
+                const [hh, mm] = timeStr.split(':').map(v => parseInt(v, 10));
+                if (!Number.isNaN(hh) && !Number.isNaN(mm)) base.setHours(hh, mm, 0, 0);
+            }
+            return base.getTime();
+        }
+
+        return Number.NaN;
+    };
+
+    list.sort((a, b) => {
+        const aPending = (a?.status || '').toLowerCase() === 'pending';
+        const bPending = (b?.status || '').toLowerCase() === 'pending';
+        if (aPending !== bPending) return aPending ? -1 : 1;
+
+        // Pending: newest request first
+        if (aPending && bPending) {
+            const aCreated = getCreatedTs(a);
+            const bCreated = getCreatedTs(b);
+            const aInvalid = Number.isNaN(aCreated);
+            const bInvalid = Number.isNaN(bCreated);
+            if (aInvalid !== bInvalid) return aInvalid ? 1 : -1;
+            if (!aInvalid && !bInvalid && aCreated !== bCreated) return bCreated - aCreated;
+
+            const aId = a?.id ?? 0;
+            const bId = b?.id ?? 0;
+            return bId - aId;
+        }
+
+        // History: newest appointment first
+        const aAppt = getAppointmentTs(a);
+        const bAppt = getAppointmentTs(b);
+        const aInvalid = Number.isNaN(aAppt);
+        const bInvalid = Number.isNaN(bAppt);
+        if (aInvalid !== bInvalid) return aInvalid ? 1 : -1;
+        if (!aInvalid && !bInvalid && aAppt !== bAppt) return bAppt - aAppt;
+
+        const aCreated = getCreatedTs(a);
+        const bCreated = getCreatedTs(b);
+        const aCreatedInvalid = Number.isNaN(aCreated);
+        const bCreatedInvalid = Number.isNaN(bCreated);
+        if (aCreatedInvalid !== bCreatedInvalid) return aCreatedInvalid ? 1 : -1;
+        if (!aCreatedInvalid && !bCreatedInvalid && aCreated !== bCreated) return bCreated - aCreated;
+
+        const aId = a?.id ?? 0;
+        const bId = b?.id ?? 0;
+        return bId - aId;
+    });
+
+    return list;
+}
+
 async function fetchRequests() {
     showLoading(true);
 
@@ -41,7 +127,7 @@ async function fetchRequests() {
         const res = await apiCall('/admin/appointments');
         if (!res || !res.ok) throw new Error('Failed to fetch requests');
 
-        allRequests = await res.json();
+        allRequests = sortRequests(await res.json());
         applySearchFilter();
         currentPage = 1;
         render();
@@ -146,7 +232,7 @@ async function cancelMeeting(id) {
             if (r && r.id === id) return { ...r, status: 'cancelled' };
             return r;
         };
-        allRequests = (allRequests || []).map(updateRow);
+        allRequests = sortRequests((allRequests || []).map(updateRow));
 
         applySearchFilter();
         const totalPages = Math.max(1, Math.ceil(filteredRequests.length / ROWS_PER_PAGE));
@@ -169,11 +255,16 @@ function renderPagination() {
 
     let html = '';
 
+    const MAX_VISIBLE_PAGES = 5;
+    const maxStart = Math.max(1, totalPages - MAX_VISIBLE_PAGES + 1);
+    const startPage = Math.min(Math.max(1, currentPage), maxStart);
+    const endPage = Math.min(totalPages, startPage + MAX_VISIBLE_PAGES - 1);
+
     html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
                 <i class='bx bx-chevron-left'></i>
              </button>`;
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = startPage; i <= endPage; i++) {
         html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
     }
 
