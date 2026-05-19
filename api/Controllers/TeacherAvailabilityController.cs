@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using AppointmentSystemAPI.Data;
 using AppointmentSystemAPI.Models;
+using System.Globalization;
 
 namespace AppointmentSystemAPI.Controllers
 {
@@ -118,6 +119,8 @@ namespace AppointmentSystemAPI.Controllers
 
             var weekly = await _context.TeacherAvailabilities
                 .Where(ta => ta.TeacherId == teacherId)
+                .OrderBy(ta => ta.DayOfWeek)
+                .ThenBy(ta => ta.StartTime)
                 .Select(ta => new
                 {
                     ta.DayOfWeek,
@@ -131,6 +134,8 @@ namespace AppointmentSystemAPI.Controllers
 
             var overrides = await _context.TeacherDateOverrides
                 .Where(o => o.TeacherId == teacherId)
+                .OrderBy(o => o.SpecificDate)
+                .ThenBy(o => o.StartTime)
                 .Select(o => new
                 {
                     date = o.SpecificDate.ToString("yyyy-MM-dd"),
@@ -267,12 +272,6 @@ namespace AppointmentSystemAPI.Controllers
             var today = DateOnly.FromDateTime(manilaNow);
             var now = TimeOnly.FromDateTime(manilaNow);
 
-            // Get all teachers with their availability
-            var teachers = await _context.Users
-                .Where(u => u.Role == "teacher")
-                .Select(u => new { u.Id, u.Name, u.ProfilePicture })
-                .ToListAsync();
-
             var allAvailability = await _context.TeacherAvailabilities.ToListAsync();
             var weekEnd = weekStart.AddDays(4); // Friday
             var allOverrides = await _context.TeacherDateOverrides
@@ -285,6 +284,34 @@ namespace AppointmentSystemAPI.Controllers
                     && a.AppointmentDate <= weekEnd
                     && a.Status == "accepted")
                 .ToListAsync();
+
+            // Get all teachers and order by latest availability/override update
+            var teachers = await _context.Users
+                .Where(u => u.Role == "teacher")
+                .Select(u => new { u.Id, u.Name, u.ProfilePicture })
+                .ToListAsync();
+
+            DateTime GetLatestUpdate(int teacherId)
+            {
+                var latestAvail = allAvailability
+                    .Where(a => a.TeacherId == teacherId)
+                    .Select(a => a.UpdatedAt)
+                    .DefaultIfEmpty(DateTime.MinValue)
+                    .Max();
+
+                var latestOverride = allOverrides
+                    .Where(o => o.TeacherId == teacherId)
+                    .Select(o => o.UpdatedAt)
+                    .DefaultIfEmpty(DateTime.MinValue)
+                    .Max();
+
+                return latestAvail > latestOverride ? latestAvail : latestOverride;
+            }
+
+            teachers = teachers
+                .OrderByDescending(t => GetLatestUpdate(t.Id))
+                .ThenBy(t => t.Name)
+                .ToList();
 
             var result = teachers.Select(teacher =>
             {
@@ -305,6 +332,7 @@ namespace AppointmentSystemAPI.Controllers
                     var dayBookings = teacherBookings
                         .Where(a => a.AppointmentDate == currentDate)
                         .Select(a => (start: a.StartTime, end: AddMinutesClamped(a.EndTime, GraceMinutesAfterAppointment)))
+                        .OrderBy(b => b.start)
                         .ToList();
 
                     // Check for date-specific override first
@@ -323,6 +351,7 @@ namespace AppointmentSystemAPI.Controllers
                                 .Where(o => o.StartTime.HasValue && o.EndTime.HasValue)
                                 .Select(o => (start: o.StartTime!.Value, end: o.EndTime!.Value))
                                 .Where(s => s.end > s.start)
+                                .OrderBy(s => s.start)
                                 .ToList();
 
                             // If it's today and all slots have already started, treat as closed.
@@ -347,9 +376,12 @@ namespace AppointmentSystemAPI.Controllers
                                     }));
                             }
 
-                            var fullyBooked = rawSlots.Count > 0 && availableSlots.Count == 0;
+                            var sortedSlots = availableSlots
+                                .OrderBy(s => TimeOnly.ParseExact(s.StartTime, "h:mm tt", CultureInfo.InvariantCulture))
+                                .ToList();
+                            var fullyBooked = rawSlots.Count > 0 && sortedSlots.Count == 0;
                             var closed = rawSlots.Count == 0;
-                            days.Add(new DayAvailabilityDto { Closed = closed, FullyBooked = fullyBooked, Slots = availableSlots });
+                            days.Add(new DayAvailabilityDto { Closed = closed, FullyBooked = fullyBooked, Slots = sortedSlots });
                         }
                     }
                     else
@@ -360,6 +392,7 @@ namespace AppointmentSystemAPI.Controllers
                             .Where(a => ComputeEffectiveWeekStart(a.CreatedAt, a.DayOfWeek, a.StartTime) == weekStart)
                             .Select(a => (start: a.StartTime, end: a.EndTime))
                             .Where(s => s.end > s.start)
+                            .OrderBy(s => s.start)
                             .ToList();
 
                         // If it's today and all slots have already started, treat as closed.
@@ -384,9 +417,12 @@ namespace AppointmentSystemAPI.Controllers
                                 }));
                         }
 
-                        var fullyBooked = rawSlots.Count > 0 && availableSlots.Count == 0;
+                        var sortedSlots = availableSlots
+                            .OrderBy(s => TimeOnly.ParseExact(s.StartTime, "h:mm tt", CultureInfo.InvariantCulture))
+                            .ToList();
+                        var fullyBooked = rawSlots.Count > 0 && sortedSlots.Count == 0;
                         var closed = rawSlots.Count == 0;
-                        days.Add(new DayAvailabilityDto { Closed = closed, FullyBooked = fullyBooked, Slots = availableSlots });
+                        days.Add(new DayAvailabilityDto { Closed = closed, FullyBooked = fullyBooked, Slots = sortedSlots });
                     }
                 }
 

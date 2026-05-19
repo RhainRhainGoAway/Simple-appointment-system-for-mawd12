@@ -157,11 +157,6 @@ namespace AppointmentSystemAPI.Controllers
             var activeWeekStart = GetActiveWeekStart(DateOnly.FromDateTime(DateTime.Now));
             var includeWeeklySchedule = weekStart == activeWeekStart;
 
-            var teachers = await _context.Users
-                .Where(u => u.Role == "teacher")
-                .Select(u => new { u.Id, u.Name, u.ProfilePicture })
-                .ToListAsync();
-
             var allAvailability = await _context.TeacherAvailabilities.ToListAsync();
             var weekEnd = weekStart.AddDays(4); // Friday
 
@@ -174,6 +169,33 @@ namespace AppointmentSystemAPI.Controllers
                     && a.AppointmentDate <= weekEnd
                     && a.Status == "accepted")
                 .ToListAsync();
+
+            var teachers = await _context.Users
+                .Where(u => u.Role == "teacher")
+                .Select(u => new { u.Id, u.Name, u.ProfilePicture })
+                .ToListAsync();
+
+            DateTime GetLatestUpdate(int teacherId)
+            {
+                var latestAvail = allAvailability
+                    .Where(a => a.TeacherId == teacherId)
+                    .Select(a => a.UpdatedAt)
+                    .DefaultIfEmpty(DateTime.MinValue)
+                    .Max();
+
+                var latestOverride = allOverrides
+                    .Where(o => o.TeacherId == teacherId)
+                    .Select(o => o.UpdatedAt)
+                    .DefaultIfEmpty(DateTime.MinValue)
+                    .Max();
+
+                return latestAvail > latestOverride ? latestAvail : latestOverride;
+            }
+
+            teachers = teachers
+                .OrderByDescending(t => GetLatestUpdate(t.Id))
+                .ThenBy(t => t.Name)
+                .ToList();
 
             string[] dayNames = { "mon", "tue", "wed", "thu", "fri" };
 
@@ -193,6 +215,7 @@ namespace AppointmentSystemAPI.Controllers
                     var dayBookings = teacherBookings
                         .Where(a => a.AppointmentDate == currentDate)
                         .Select(a => (start: a.StartTime, end: AddMinutesClamped(a.EndTime, GraceMinutesAfterAppointment)))
+                        .OrderBy(b => b.start)
                         .ToList();
 
                     var dateOverrides = teacherOverrides
@@ -211,24 +234,29 @@ namespace AppointmentSystemAPI.Controllers
                                 .Where(o => o.StartTime.HasValue && o.EndTime.HasValue)
                                 .Select(o => (start: o.StartTime!.Value, end: o.EndTime!.Value))
                                 .Where(s => s.end > s.start)
+                                .OrderBy(s => s.start)
                                 .ToList();
 
-                            var availableSlots = new List<object>();
+                            var availableSlots = new List<(TimeOnly start, TimeOnly end)>();
                             foreach (var slot in rawSlots)
                             {
                                 var remaining = SubtractBookedSlots(slot.start, slot.end, dayBookings);
                                 availableSlots.AddRange(remaining
-                                    .Where(r => r.end > r.start)
-                                    .Select(r => new
-                                    {
-                                        startTime = r.start.ToString("h:mm tt"),
-                                        endTime = r.end.ToString("h:mm tt")
-                                    }));
+                                    .Where(r => r.end > r.start));
                             }
 
-                            var fullyBooked = rawSlots.Count > 0 && availableSlots.Count == 0;
+                            var sortedSlots = availableSlots
+                                .OrderBy(s => s.start)
+                                .Select(r => new
+                                {
+                                    startTime = r.start.ToString("h:mm tt"),
+                                    endTime = r.end.ToString("h:mm tt")
+                                })
+                                .ToList();
+
+                            var fullyBooked = rawSlots.Count > 0 && sortedSlots.Count == 0;
                             var closed = rawSlots.Count == 0;
-                            days.Add(new { closed, fullyBooked, slots = availableSlots });
+                            days.Add(new { closed, fullyBooked, slots = sortedSlots });
                         }
                     }
                     else
@@ -238,25 +266,30 @@ namespace AppointmentSystemAPI.Controllers
                                 .Where(a => a.DayOfWeek == dayName)
                                 .Select(a => (start: a.StartTime, end: a.EndTime))
                                 .Where(s => s.end > s.start)
+                                .OrderBy(s => s.start)
                                 .ToList()
                             : new List<(TimeOnly start, TimeOnly end)>();
 
-                        var availableSlots = new List<object>();
+                        var availableSlots = new List<(TimeOnly start, TimeOnly end)>();
                         foreach (var slot in rawSlots)
                         {
                             var remaining = SubtractBookedSlots(slot.start, slot.end, dayBookings);
                             availableSlots.AddRange(remaining
-                                .Where(r => r.end > r.start)
-                                .Select(r => new
-                                {
-                                    startTime = r.start.ToString("h:mm tt"),
-                                    endTime = r.end.ToString("h:mm tt")
-                                }));
+                                .Where(r => r.end > r.start));
                         }
 
-                        var fullyBooked = rawSlots.Count > 0 && availableSlots.Count == 0;
+                        var sortedSlots = availableSlots
+                            .OrderBy(s => s.start)
+                            .Select(r => new
+                            {
+                                startTime = r.start.ToString("h:mm tt"),
+                                endTime = r.end.ToString("h:mm tt")
+                            })
+                            .ToList();
+
+                        var fullyBooked = rawSlots.Count > 0 && sortedSlots.Count == 0;
                         var closed = rawSlots.Count == 0;
-                        days.Add(new { closed, fullyBooked, slots = availableSlots });
+                        days.Add(new { closed, fullyBooked, slots = sortedSlots });
                     }
                 }
 

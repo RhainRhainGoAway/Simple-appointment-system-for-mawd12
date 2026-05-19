@@ -124,6 +124,27 @@ function isUnsetTimeValue(timeStr) {
     return normalizeTimeStr(timeStr) === '00:00';
 }
 
+function timeToMinutes12(timeStr, period) {
+    if (isUnsetTimeValue(timeStr)) return Number.POSITIVE_INFINITY;
+    const normalized = normalizeTimeStr(timeStr);
+    const parts = normalized.split(':');
+    if (parts.length !== 2) return Number.POSITIVE_INFINITY;
+    const hour = Number(parts[0]);
+    const minute = Number(parts[1]);
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return Number.POSITIVE_INFINITY;
+
+    let h = hour % 12;
+    const p = String(period || '').toUpperCase();
+    if (p === 'PM') h += 12;
+    return (h * 60) + minute;
+}
+
+function sortSlotsByStart(slots) {
+    return (slots || []).slice().sort((a, b) => {
+        return timeToMinutes12(a.startTime, a.startPeriod) - timeToMinutes12(b.startTime, b.startPeriod);
+    });
+}
+
 function formatDayLabel(day) {
     const map = { mon: 'Mon', tue: 'Tues', wed: 'Wed', thu: 'Thurs', fri: 'Fri' };
     return map[day] || day;
@@ -740,7 +761,8 @@ function renderSpecificDatesList() {
         if (item.isClosed) {
             timesHtml = '<span class="closed-badge">Closed</span>';
         } else {
-            item.slots.forEach(slot => {
+            const sortedSlots = sortSlotsByStart(item.slots || []);
+            sortedSlots.forEach(slot => {
                 const startLabel = snapTimeStrToMinuteStep(slot.startTime);
                 const endLabel = snapTimeStrToMinuteStep(slot.endTime);
                 timesHtml += `<span class="specific-time-pill">${startLabel} ${slot.startPeriod} - ${endLabel} ${slot.endPeriod}</span>`;
@@ -796,7 +818,8 @@ async function loadSavedSchedule() {
                 if (!scheduleState.weekly[day]) return;
                 const dayData = data.weekly[day];
                 scheduleState.weekly[day].enabled = dayData.enabled;
-                scheduleState.weekly[day].slots = (dayData.slots || []).map(s => ({
+                const sortedSlots = sortSlotsByStart(dayData.slots || []);
+                scheduleState.weekly[day].slots = sortedSlots.map(s => ({
                     id: Date.now() + Math.random(),
                     startTime: snapTimeStrToMinuteStep(s.startTime),
                     startPeriod: s.startPeriod,
@@ -833,7 +856,12 @@ async function loadSavedSchedule() {
                     });
                 }
             });
-            scheduleState.specificDates = Object.values(grouped);
+            scheduleState.specificDates = Object.values(grouped).map(item => {
+                return {
+                    ...item,
+                    slots: sortSlotsByStart(item.slots || [])
+                };
+            });
             renderSpecificDatesList();
         }
     } catch (e) {
@@ -879,9 +907,10 @@ document.getElementById('saveScheduleBtn')?.addEventListener('click', async func
     // Weekly schedule
     Object.keys(scheduleState.weekly).forEach(day => {
         const dayData = scheduleState.weekly[day];
+        const sortedSlots = sortSlotsByStart(dayData.slots || []);
         dataToSave.weekly[day] = {
             enabled: dayData.enabled,
-            slots: dayData.slots.map(s => ({
+            slots: sortedSlots.map(s => ({
                 startTime: s.startTime,
                 startPeriod: s.startPeriod,
                 endTime: s.endTime,
@@ -897,10 +926,12 @@ document.getElementById('saveScheduleBtn')?.addEventListener('click', async func
             String(item.date.getMonth() + 1).padStart(2, '0') + '-' +
             String(item.date.getDate()).padStart(2, '0');
 
+        const sortedSlots = sortSlotsByStart(item.slots || []);
+
         dataToSave.specificDates.push({
             date: dateStr,
             isClosed: item.isClosed,
-            slots: item.isClosed ? [] : (item.slots || []).map(s => ({
+            slots: item.isClosed ? [] : sortedSlots.map(s => ({
                 startTime: s.startTime,
                 startPeriod: s.startPeriod,
                 endTime: s.endTime,

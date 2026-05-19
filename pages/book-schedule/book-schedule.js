@@ -212,7 +212,12 @@ function renderTeacherTable() {
                 const timeRange = `${slot.startTime} - ${slot.endTime}`;
                 return `<button class="time-slot" data-teacher-id="${teacher.teacherId}" data-teacher-name="${escapeHtml(teacher.teacherName)}" data-book-date="${bookDateStr}" data-day-index="${dayIndex}" data-time-range="${escapeHtml(timeRange)}">${escapeHtml(timeRange)}</button>`;
             }).join('');
-            return `<td><div class="slots-container">${slotButtons}</div></td>`;
+            const hasToggle = day.slots.length >= 3;
+            const toggleButton = hasToggle
+                ? `<button type="button" class="slot-toggle" aria-label="Toggle slots" aria-expanded="false"><i class='bx bx-chevron-down'></i></button>`
+                : '';
+            const expandedClass = hasToggle ? '' : ' expanded';
+            return `<td><div class="slot-cell"><div class="slots-container${expandedClass}">${slotButtons}</div>${toggleButton}</div></td>`;
         }).join('');
 
         return `
@@ -251,6 +256,17 @@ function renderTeacherTable() {
             bookingState.bookDate = bookDateStr;
 
             openBookingModal(teacherName, dateText, timeRange);
+        });
+    });
+
+    tbody.querySelectorAll('.slot-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const cell = toggle.closest('.slot-cell');
+            const container = cell?.querySelector('.slots-container');
+            if (!container) return;
+            const isExpanded = container.classList.toggle('expanded');
+            toggle.classList.toggle('expanded', isExpanded);
+            toggle.setAttribute('aria-expanded', String(isExpanded));
         });
     });
 
