@@ -137,7 +137,8 @@
 }
 
 /* Modal Customization */
-#bookingModal .modal-content {
+#bookingModal .modal-content,
+.app-modal .modal-content {
     border-radius: 16px !important;
     border: none;
     overflow: hidden;
@@ -151,26 +152,31 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-#bookingModal .modal-header {
+#bookingModal .modal-header,
+.app-modal .modal-header {
     padding: 20px 24px !important;
     border-bottom: 1px solid #e5e7eb !important;
 }
 
-#bookingModal .modal-body {
+#bookingModal .modal-body,
+.app-modal .modal-body {
     padding: 20px 24px 24px !important;
 }
 
-#bookingModal .modal-footer {
+#bookingModal .modal-footer,
+.app-modal .modal-footer {
     padding: 0 24px 24px !important;
     border-top: none !important;
 }
 
-#bookingModal .form-control {
+#bookingModal .form-control,
+.app-modal .form-control {
     border-radius: 8px;
     padding: 10px 14px;
 }
 
-#bookingModal .form-control:focus {
+#bookingModal .form-control:focus,
+.app-modal .form-control:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }

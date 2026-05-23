@@ -153,22 +153,27 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         return;
     }
     
-    // Validate student number if student role is selected
-    const role = form.role.value;
+    // Student-only registration
     const studentNumber = form.studentNumber ? form.studentNumber.value : '';
+    const gradeLevel = form.gradeLevel ? form.gradeLevel.value : '';
     const sectionId = form.sectionId ? form.sectionId.value : '';
-    
-    if (role === 'student') {
-        if (!studentNumber.trim()) {
-            errorDiv.textContent = 'Student number is required for students.';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        if (!sectionId) {
-            errorDiv.textContent = 'Please select your grade level and section.';
-            errorDiv.style.display = 'block';
-            return;
-        }
+
+    if (!studentNumber.trim()) {
+        errorDiv.textContent = 'Student number is required.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    if (!gradeLevel || !sectionId) {
+        errorDiv.textContent = 'Please select your grade level and section.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    const sectionIdValue = parseInt(sectionId, 10);
+    if (!Number.isFinite(sectionIdValue)) {
+        errorDiv.textContent = 'Please select a valid section.';
+        errorDiv.style.display = 'block';
+        return;
     }
     
     submitBtn.disabled = true;
@@ -184,9 +189,9 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
                 name: form.name.value,
                 email: form.email.value,
                 password: form.password.value,
-                role: form.role.value,
-                studentNumber: role === 'student' ? studentNumber : null,
-                sectionId: role === 'student' ? parseInt(sectionId) : null
+                role: 'student',
+                studentNumber: studentNumber,
+                sectionId: sectionIdValue
             })
         });
 
@@ -195,9 +200,8 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         if (response.ok) {
             await appAlert('Registration successful! Please login.', { title: 'Success' });
             form.reset();
-            // Hide student fields after reset
-            document.getElementById('studentFields').style.display = 'none';
             document.getElementById('sectionSelect').disabled = true;
+            document.getElementById('sectionSelect').innerHTML = '<option value="" hidden>--Select Section--</option>';
             showForm('login-form');
         } else {
             errorDiv.textContent = data.message || 'Registration failed!';
@@ -210,23 +214,6 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Register';
-    }
-});
-
-// ============================================
-// ROLE SELECT - Show/Hide Student Fields
-// ============================================
-document.getElementById('roleSelect').addEventListener('change', function() {
-    const studentFields = document.getElementById('studentFields');
-    if (this.value === 'student') {
-        studentFields.style.display = 'block';
-    } else {
-        studentFields.style.display = 'none';
-        // Reset student fields
-        document.getElementById('studentNumberInput').value = '';
-        document.getElementById('gradeLevelSelect').value = '';
-        document.getElementById('sectionSelect').innerHTML = '<option value="" hidden>--Select Section--</option>';
-        document.getElementById('sectionSelect').disabled = true;
     }
 });
 

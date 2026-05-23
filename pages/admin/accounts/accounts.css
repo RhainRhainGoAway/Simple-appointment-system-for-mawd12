@@ -1,0 +1,163 @@
+@import url('../students/students.css');
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.header-actions .btn i {
+    margin-right: 6px;
+}
+
+.table-responsive {
+    width: 100%;
+}
+
+.accounts-table {
+    table-layout: fixed;
+}
+
+.accounts-table thead th,
+.accounts-table tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.accounts-table thead th:nth-child(1) {
+    width: 18%;
+}
+
+.accounts-table thead th:nth-child(2) {
+    width: 10%;
+}
+
+.accounts-table thead th:nth-child(3) {
+    width: 22%;
+}
+
+.accounts-table thead th:nth-child(4) {
+    width: 12%;
+}
+
+.accounts-table thead th:nth-child(5) {
+    width: 14%;
+}
+
+.accounts-table thead th:nth-child(6) {
+    width: 12%;
+}
+
+.accounts-table thead th:nth-child(7) {
+    width: 12%;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.role-student {
+    background: #e7f1ff;
+    color: #0d6efd;
+}
+
+.role-teacher {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #1f2937;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-action i {
+    font-size: 16px;
+}
+
+.btn-action:hover {
+    background: #f8f9fa;
+}
+
+.account-summary {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+}
+
+.account-summary .summary-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+}
+
+.account-summary .summary-value {
+    font-weight: 600;
+    color: #111827;
+    margin-top: 4px;
+}
+
+.account-summary .summary-sub {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.pagination-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    padding-top: 14px;
+}
+
+
+@media (max-width: 991px) {
+    .accounts-table thead th:nth-child(4),
+    .accounts-table thead th:nth-child(5),
+    .accounts-table thead th:nth-child(6) {
+        display: none;
+    }
+
+    .accounts-table tbody td:nth-child(4),
+    .accounts-table tbody td:nth-child(5),
+    .accounts-table tbody td:nth-child(6) {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .accounts-table thead th:nth-child(3) {
+        width: 30%;
+    }
+}

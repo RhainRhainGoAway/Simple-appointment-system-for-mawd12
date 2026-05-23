@@ -41,10 +41,19 @@ namespace AppointmentSystemAPI.Controllers
             }
 
             var role = (model.Role ?? string.Empty).Trim().ToLowerInvariant();
-            if (role != "student" && role != "teacher")
+            if (string.IsNullOrWhiteSpace(role))
             {
-                // Admin users should be created manually by setting the role in the database.
-                return BadRequest(new { message = "Invalid role. Only student and teacher registration is allowed." });
+                role = "student";
+            }
+
+            if (role != "student")
+            {
+                return BadRequest(new { message = "Teacher accounts must be created by an admin." });
+            }
+
+            if (string.IsNullOrWhiteSpace(model.StudentNumber) || !model.SectionId.HasValue)
+            {
+                return BadRequest(new { message = "Student number, grade level, and section are required." });
             }
 
             // Create new user with hashed password
@@ -53,9 +62,9 @@ namespace AppointmentSystemAPI.Controllers
                 Name = model.Name,
                 Email = model.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                Role = role,
-                StudentNumber = role == "student" ? model.StudentNumber : null,
-                SectionId = role == "student" ? model.SectionId : null
+                Role = "student",
+                StudentNumber = model.StudentNumber,
+                SectionId = model.SectionId
             };
 
             _context.Users.Add(user);

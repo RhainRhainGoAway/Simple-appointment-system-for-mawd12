@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AppointmentSystemAPI.Data;
+using AppointmentSystemAPI.DTOs;
+using AppointmentSystemAPI.Models;
 using AppointmentSystemAPI.Services;
 
 namespace AppointmentSystemAPI.Controllers
@@ -47,6 +49,106 @@ namespace AppointmentSystemAPI.Controllers
             ).ToListAsync();
 
             return Ok(rows);
+        }
+
+        // ============================================
+        // 1b) Accounts list (students + teachers)
+        // ============================================
+        // GET: api/admin/accounts
+        [HttpGet("accounts")]
+        public async Task<IActionResult> GetAccounts()
+        {
+            var rows = await (
+                from u in _context.Users
+                join s in _context.Sections on u.SectionId equals s.Id into sectionJoin
+                from s in sectionJoin.DefaultIfEmpty()
+                where u.Role == "student" || u.Role == "teacher"
+                orderby u.Role, u.Name
+                select new
+                {
+                    id = u.Id,
+                    name = u.Name,
+                    email = u.Email,
+                    role = u.Role,
+                    studentNumber = u.StudentNumber,
+                    sectionName = s != null ? s.Name : null,
+                    gradeLevel = s != null ? s.GradeLevel : null
+                }
+            ).ToListAsync();
+
+            return Ok(rows);
+        }
+
+        // ============================================
+        // 1c) Create teacher account
+        // ============================================
+        // POST: api/admin/teachers
+        [HttpPost("teachers")]
+        public async Task<IActionResult> CreateTeacher([FromBody] AdminCreateTeacherDto model)
+        {
+            if (model == null)
+                return BadRequest(new { message = "Invalid payload." });
+
+            if (string.IsNullOrWhiteSpace(model.Name))
+                return BadRequest(new { message = "Name is required." });
+
+            if (string.IsNullOrWhiteSpace(model.Email))
+                return BadRequest(new { message = "Email is required." });
+
+            if (string.IsNullOrWhiteSpace(model.Password))
+                return BadRequest(new { message = "Password is required." });
+
+            const string allowedDomain = "@santarosa.sti.edu.ph";
+            if (!model.Email.ToLower().EndsWith(allowedDomain))
+            {
+                return BadRequest(new { message = "Only @santarosa.sti.edu.ph email addresses are allowed." });
+            }
+
+            if (await _context.Users.AnyAsync(s => s.Email == model.Email))
+            {
+                return BadRequest(new { message = "Email is already registered!" });
+            }
+
+            var user = new AppUser
+            {
+                Name = model.Name.Trim(),
+                Email = model.Email.Trim(),
+                Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                Role = "teacher",
+                StudentNumber = null,
+                SectionId = null
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Teacher account created successfully." });
+        }
+
+        // ============================================
+        // 1d) Reset account password (students + teachers)
+        // ============================================
+        // PUT: api/admin/accounts/{id}/password
+        [HttpPut("accounts/{id}/password")]
+        public async Task<IActionResult> ResetPassword(int id, [FromBody] AdminChangePasswordDto model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.NewPassword))
+                return BadRequest(new { message = "New password is required." });
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return NotFound(new { message = "Account not found." });
+
+            var role = (user.Role ?? string.Empty).Trim().ToLowerInvariant();
+            if (role != "student" && role != "teacher")
+            {
+                return BadRequest(new { message = "Only student and teacher accounts can be updated." });
+            }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password updated successfully." });
         }
 
         // ============================================

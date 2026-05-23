@@ -30,21 +30,15 @@
                 <input type="text" name="name" placeholder="Name" required>
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Password" required>
-                <select name="role" id="roleSelect" required>
-                    <option value="" hidden>--Select Role--</option>
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
-                </select>
-                
-                <!-- Student-only fields (hidden by default) -->
-                <div id="studentFields" style="display: none;">
-                    <input type="text" name="studentNumber" id="studentNumberInput" placeholder="Student Number">
-                    <select name="gradeLevel" id="gradeLevelSelect">
+                <!-- Student fields -->
+                <div id="studentFields">
+                    <input type="text" name="studentNumber" id="studentNumberInput" placeholder="Student Number" required>
+                    <select name="gradeLevel" id="gradeLevelSelect" required>
                         <option value="" hidden>--Select Grade Level--</option>
                         <option value="Grade 11">Grade 11</option>
                         <option value="Grade 12">Grade 12</option>
                     </select>
-                    <select name="sectionId" id="sectionSelect" disabled>
+                    <select name="sectionId" id="sectionSelect" disabled required>
                         <option value="" hidden>--Select Section--</option>
                     </select>
                 </div>
